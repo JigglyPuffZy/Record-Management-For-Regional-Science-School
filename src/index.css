@@ -1,0 +1,178 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-serif: Georgia, "Times New Roman", Times, serif;
+
+  /* Forest green — DepEd school identity */
+  --color-brand-50: #f0fdf4;
+  --color-brand-100: #dcfce7;
+  --color-brand-200: #bbf7d0;
+  --color-brand-300: #86efac;
+  --color-brand-400: #4ade80;
+  --color-brand-500: #22c55e;
+  --color-brand-600: #16a34a;
+  --color-brand-700: #15803d;
+  --color-brand-800: #166534;
+  --color-brand-900: #14532d;
+  --color-brand-950: #052e16;
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    color-scheme: light;
+  }
+
+  body {
+    @apply font-sans antialiased text-slate-600;
+    min-height: 100vh;
+    background-color: #f4f6f5;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-sans font-bold tracking-tight text-slate-900;
+  }
+
+  .print-area h1,
+  .print-area h2,
+  .print-area h3,
+  .print-area h4,
+  .print-area h5,
+  .print-area h6 {
+    font-family: var(--font-serif);
+    font-weight: inherit;
+    letter-spacing: normal;
+  }
+
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type="number"] {
+    -moz-appearance: textfield;
+  }
+
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  input:-webkit-autofill:active {
+    -webkit-text-fill-color: #0f172a;
+    box-shadow: 0 0 0 1000px #fff inset;
+    -webkit-box-shadow: 0 0 0 1000px #fff inset;
+    transition: background-color 9999s ease-in-out 0s;
+  }
+
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-brand-600;
+  }
+
+  ::selection {
+    background-color: rgba(22, 163, 74, 0.2);
+  }
+}
+
+@layer utilities {
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(148, 163, 184, 0.35) transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.35);
+    border-radius: 999px;
+  }
+
+  .app-shell {
+    background-color: #f4f6f5;
+    background-image: linear-gradient(180deg, #f8faf9 0%, #f1f5f3 100%);
+  }
+
+  .surface-card {
+    @apply rounded-2xl border border-slate-200/90 bg-white shadow-sm;
+  }
+
+  .surface-card-elevated {
+    @apply rounded-2xl border border-slate-200 bg-white shadow-md shadow-slate-900/[0.04];
+  }
+
+  .bento-tile {
+    @apply rounded-2xl border border-slate-200/90 bg-white p-5 shadow-sm transition-all duration-200 hover:border-slate-300 hover:shadow-md sm:p-6;
+  }
+
+  .icon-well {
+    @apply flex items-center justify-center rounded-xl bg-brand-50 text-brand-700;
+  }
+
+  .icon-well-sm {
+    @apply flex h-9 w-9 items-center justify-center rounded-lg bg-brand-50 text-brand-700;
+  }
+
+  .icon-well-md {
+    @apply flex h-11 w-11 items-center justify-center rounded-xl bg-brand-50 text-brand-700;
+  }
+
+  .avatar-well {
+    @apply flex items-center justify-center rounded-xl bg-brand-700 text-sm font-bold text-white;
+  }
+
+  .dock-safe-area {
+    padding-bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  .page-enter {
+    animation: page-enter 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .login-step-enter {
+    animation: login-step 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .input-field {
+    @apply h-11 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-900 placeholder:text-slate-400 transition-colors;
+    @apply focus:border-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-600/15;
+  }
+}
+
+@keyframes page-enter {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes login-step {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-enter,
+  .login-step-enter {
+    animation: none;
+  }
+}
+
+@media print {
+  @page { size: A4 portrait; margin: 12mm 10mm; }
+  html, body { background: #fff !important; }
+  .no-print { display: none !important; }
+  .print-area {
+    position: absolute !important;
+    inset: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: none !important;
+    background: #fff !important;
+    color: #000 !important;
+    font-size: 9pt;
+  }
+  .print-page { page-break-after: always; box-shadow: none !important; border-color: #999 !important; }
+  .print-page:last-child { page-break-after: auto; }
+  .print-avoid-break { break-inside: avoid; page-break-inside: avoid; }
+  table { border-collapse: collapse !important; }
+  thead { display: table-header-group; }
+}
