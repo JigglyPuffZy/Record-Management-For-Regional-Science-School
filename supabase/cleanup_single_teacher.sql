@@ -28,7 +28,7 @@ DELETE FROM teachers;
 INSERT INTO teachers (teacher_id, name, email, position, demo_password)
 VALUES (
   'T-ADMIN',
-  'Maria Santos',
+  'Admin',
   'admin@bpans.edu.ph',
   'Teacher III — System Administrator',
   'Bpans@2026'
@@ -64,5 +64,6 @@ UNION ALL SELECT 'grade_records', count(*) FROM grade_records
 UNION ALL SELECT 'teaching_assignments', count(*) FROM teaching_assignments;
 
 -- Test login (should return 1 row):
+-- UPDATE teachers SET name = 'Admin' WHERE teacher_id = 'T-ADMIN';
 -- SELECT * FROM login_teacher('T-ADMIN', 'Bpans@2026');
 -- SELECT * FROM login_teacher('admin@bpans.edu.ph', 'Bpans@2026');

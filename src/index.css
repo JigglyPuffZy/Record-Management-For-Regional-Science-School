@@ -128,6 +128,258 @@
     animation: page-enter 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
   }
 
+  /* ── Teacher dashboard: workspace layout ── */
+  .dash-workspace {
+    @apply space-y-5 sm:space-y-6;
+  }
+
+  .dash-hero {
+    @apply relative overflow-hidden rounded-3xl bg-gradient-to-br from-brand-800 via-brand-700 to-brand-600 px-5 py-6 text-white shadow-lg shadow-brand-900/15 sm:px-8 sm:py-8;
+  }
+
+  .dash-hero-pattern {
+    position: absolute;
+    inset: 0;
+    opacity: 0.12;
+    background-image:
+      radial-gradient(circle at 20% 20%, #fff 0 1px, transparent 1px),
+      radial-gradient(circle at 80% 60%, #fff 0 1px, transparent 1px);
+    background-size: 28px 28px;
+  }
+
+  .dash-hero-inner {
+    @apply relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between;
+  }
+
+  .dash-hero-brand {
+    @apply mb-4 flex items-center gap-3;
+  }
+
+  .dash-hero-brand img {
+    @apply rounded-xl bg-white/95 p-1 ring-1 ring-white/30;
+  }
+
+  .dash-hero-eyebrow {
+    @apply text-xs font-bold uppercase tracking-[0.18em] text-emerald-100;
+  }
+
+  .dash-hero-date {
+    @apply text-[11px] text-brand-100;
+  }
+
+  .dash-hero-title {
+    @apply text-2xl font-bold tracking-tight text-white sm:text-3xl lg:text-4xl;
+  }
+
+  .dash-hero-meta {
+    @apply mt-2 text-sm text-brand-100;
+  }
+
+  .dash-hero-side {
+    @apply flex items-center gap-4 lg:flex-col lg:items-end;
+  }
+
+  .dash-hero-avatar {
+    @apply flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-white/15 text-lg font-bold ring-2 ring-white/25 backdrop-blur-sm;
+  }
+
+  .dash-hero-stats {
+    @apply flex flex-wrap gap-2 lg:justify-end;
+  }
+
+  .dash-hero-stat {
+    @apply inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 text-xs text-brand-50 ring-1 ring-white/15 backdrop-blur-sm;
+  }
+
+  .dash-hero-stat strong {
+    @apply font-bold text-white;
+  }
+
+  .dash-body {
+    @apply grid gap-5 lg:grid-cols-[minmax(0,1fr)_280px] lg:gap-6;
+  }
+
+  .dash-main {
+    @apply space-y-5;
+  }
+
+  .dash-section-label {
+    @apply text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400;
+  }
+
+  .dash-section-title {
+    @apply mt-1 text-lg font-bold text-slate-900;
+  }
+
+  .dash-focus-card {
+    @apply rounded-3xl border border-slate-200/90 bg-white p-5 shadow-sm sm:p-6;
+  }
+
+  .dash-focus-head {
+    @apply flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between;
+  }
+
+  .dash-focus-title {
+    @apply mt-1 text-xl font-bold text-slate-900 sm:text-2xl;
+  }
+
+  .dash-focus-desc {
+    @apply mt-2 max-w-lg text-sm text-slate-500;
+  }
+
+  .dash-progress-ring {
+    @apply relative mx-auto flex h-24 w-24 shrink-0 flex-col items-center justify-center sm:mx-0;
+    --pct: 0;
+  }
+
+  .dash-progress-ring svg {
+    @apply absolute inset-0 h-full w-full -rotate-90;
+  }
+
+  .dash-progress-track {
+    fill: none;
+    stroke: #e2e8f0;
+    stroke-width: 3;
+  }
+
+  .dash-progress-fill {
+    fill: none;
+    stroke: #16a34a;
+    stroke-width: 3;
+    stroke-linecap: round;
+    stroke-dasharray: 97.4;
+    stroke-dashoffset: calc(97.4 - (97.4 * var(--pct)) / 100);
+    transition: stroke-dashoffset 0.6s ease;
+  }
+
+  .dash-progress-value {
+    @apply text-xl font-bold text-slate-900;
+  }
+
+  .dash-progress-caption {
+    @apply text-[10px] font-semibold uppercase tracking-wide text-slate-400;
+  }
+
+  .dash-alert {
+    @apply mt-5 flex items-center gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3.5 text-amber-900 transition-colors hover:border-amber-300 hover:bg-amber-100/80;
+  }
+
+  .dash-alert-icon {
+    @apply flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-700;
+  }
+
+  .dash-alert-title {
+    @apply text-sm font-bold;
+  }
+
+  .dash-alert-text {
+    @apply text-xs text-amber-800/80;
+  }
+
+  .dash-clear {
+    @apply mt-5 flex items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800;
+  }
+
+  .dash-primary-cta {
+    @apply mt-4 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-brand-700 px-5 py-3.5 text-sm font-bold text-white transition-colors hover:bg-brand-600 active:bg-brand-800 sm:w-auto;
+  }
+
+  .dash-classes {
+    @apply rounded-3xl border border-slate-200/90 bg-white p-5 shadow-sm sm:p-6;
+  }
+
+  .dash-classes-head {
+    @apply mb-4 flex items-start justify-between gap-3;
+  }
+
+  .dash-text-link {
+    @apply text-xs font-semibold text-brand-700 hover:text-brand-600;
+  }
+
+  .dash-class-list {
+    @apply space-y-2;
+  }
+
+  .dash-class-row {
+    @apply flex items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50/80 px-4 py-3.5 transition-all hover:border-brand-200 hover:bg-white hover:shadow-sm;
+  }
+
+  .dash-class-icon {
+    @apply flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-brand-700 ring-1 ring-slate-200;
+  }
+
+  .dash-class-name {
+    @apply truncate text-sm font-semibold text-slate-900;
+  }
+
+  .dash-class-meta {
+    @apply text-xs text-slate-500;
+  }
+
+  .dash-class-chevron {
+    @apply text-slate-300;
+  }
+
+  .dash-class-row:hover .dash-class-chevron {
+    @apply text-brand-600;
+  }
+
+  .dash-subjects {
+    @apply mt-5 border-t border-slate-100 pt-4;
+  }
+
+  .dash-subjects-label {
+    @apply mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400;
+  }
+
+  .dash-subject-tags {
+    @apply flex flex-wrap gap-1.5;
+  }
+
+  .dash-sidebar {
+    @apply space-y-4;
+  }
+
+  .dash-quick-nav {
+    @apply space-y-2 rounded-3xl border border-slate-200/90 bg-white p-3 shadow-sm;
+  }
+
+  .dash-quick-item {
+    @apply flex items-center gap-3 rounded-2xl px-3 py-3 transition-colors hover:bg-slate-50;
+  }
+
+  .dash-quick-icon {
+    @apply flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-700;
+  }
+
+  .dash-quick-label {
+    @apply text-sm font-semibold text-slate-900;
+  }
+
+  .dash-quick-hint {
+    @apply text-[11px] text-slate-500;
+  }
+
+  .dash-status-card {
+    @apply rounded-3xl border border-slate-200/90 bg-slate-50 p-4;
+  }
+
+  .dash-status-label {
+    @apply text-xs font-bold uppercase tracking-wide text-slate-400;
+  }
+
+  .dash-status-rows {
+    @apply mt-3 space-y-2;
+  }
+
+  .dash-status-row {
+    @apply flex items-center justify-between text-sm text-slate-600;
+  }
+
+  .dash-status-row strong {
+    @apply text-base font-bold text-slate-900;
+  }
+
   .login-step-enter {
     animation: login-step 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
   }

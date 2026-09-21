@@ -47,7 +47,7 @@ Login uses your Supabase database (LRN for students, Teacher ID or email for tea
 | Teacher ID | `T-ADMIN` |
 | Email | `admin@bpans.edu.ph` |
 | Password | `Bpans@2026` |
-| Name | Maria Santos |
+| Name | Admin |
 
 ## Architecture
 

@@ -4,7 +4,7 @@
 export const TEACHERS = [
   {
     teacherId: 'T-ADMIN',
-    name: 'Maria Santos',
+    name: 'Admin',
     email: 'admin@bpans.edu.ph',
     position: 'Teacher III — System Administrator',
     adviserOfClassId: 'G10-RIZAL',

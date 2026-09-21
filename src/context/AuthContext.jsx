@@ -1,16 +1,25 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { findStudentByCredentials } from '../data/students.js';
-import { findTeacherByCredentials } from '../data/teachers.js';
+import { findTeacherByCredentials, getTeacherById } from '../data/teachers.js';
 import { isSupabaseConfigured, supabase } from '../lib/supabase.js';
 import { hydrateRecords } from '../services/academicRecords.js';
 
 const AuthContext = createContext(null);
 const SESSION_KEY = 'sf10_session_v1';
 
+function normalizeSession(session) {
+  if (!session) return null;
+  if (session.role === 'teacher') {
+    const teacher = getTeacherById(session.id);
+    if (teacher?.name) return { ...session, name: teacher.name };
+  }
+  return session;
+}
+
 function readSession() {
   try {
     const raw = localStorage.getItem(SESSION_KEY);
-    return raw ? JSON.parse(raw) : null;
+    return raw ? normalizeSession(JSON.parse(raw)) : null;
   } catch {
     return null;
   }
@@ -48,9 +57,14 @@ async function loginViaSupabase(role, id, password) {
     if (error) return { ok: false, message: 'Could not reach the server. Please try again.' };
     if (!data?.length) return { ok: false, message: 'Invalid Teacher ID/email or password.' };
     const row = data[0];
+    const teacher = getTeacherById(row.teacher_id);
     return {
       ok: true,
-      session: { role: 'teacher', id: row.teacher_id, name: row.display_name },
+      session: {
+        role: 'teacher',
+        id: row.teacher_id,
+        name: teacher?.name ?? row.display_name,
+      },
     };
   }
 
@@ -114,8 +128,9 @@ export function AuthProvider({ children }) {
 
     if (!result.ok) return result;
 
-    setUser(result.session);
-    writeSession(result.session);
+    const session = normalizeSession(result.session);
+    setUser(session);
+    writeSession(session);
     await loadData();
     return { ok: true };
   }, [loadData]);
