@@ -123,9 +123,9 @@ export default function TeacherClassRecord() {
     });
   }
 
-  function handleSaveRow(studentId) {
+  async function handleSaveRow(studentId) {
     try {
-      saveGrade({
+      await saveGrade({
         teacherId: user.id,
         studentId,
         classId,
@@ -142,7 +142,7 @@ export default function TeacherClassRecord() {
       toast.success('Grade successfully saved.');
     } catch (err) {
       if (err instanceof GradeValidationError) toast.error(err.message);
-      else toast.error('Something went wrong while saving. Please try again.');
+      else toast.error(err.message || 'Something went wrong while saving. Please try again.');
     }
   }
 
@@ -154,7 +154,7 @@ export default function TeacherClassRecord() {
     setConfirmOpen(true);
   }
 
-  function confirmSaveAll() {
+  async function confirmSaveAll() {
     setSaving(true);
     try {
       const entries = [...dirtyIds].map((studentId) => ({
@@ -166,13 +166,13 @@ export default function TeacherClassRecord() {
         quarter: gradingPeriod,
         value: values[studentId],
       }));
-      saveGradesBulk(entries);
+      await saveGradesBulk(entries);
       setDirtyIds(new Set());
       toast.success('Grades successfully saved.');
       setConfirmOpen(false);
     } catch (err) {
       if (err instanceof GradeValidationError) toast.error(err.message);
-      else toast.error('Something went wrong while saving. Please try again.');
+      else toast.error(err.message || 'Something went wrong while saving. Please try again.');
     } finally {
       setSaving(false);
     }

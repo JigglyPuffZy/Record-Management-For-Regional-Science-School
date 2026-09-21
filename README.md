@@ -11,6 +11,7 @@ Student and Teacher portals.
 - React 18 + Vite 6
 - React Router 6
 - Tailwind CSS 4
+- Supabase (PostgreSQL + auth RPC)
 - lucide-react icons
 
 ## Getting started
@@ -22,15 +23,31 @@ npm run dev
 
 Open http://localhost:5173.
 
-### Demo credentials
+### Environment
 
-| Role    | ID / Email | Password    |
-| ------- | ---------- | ----------- |
-| Student | 136045210001 (LRN) | student123  |
-| Teacher | T-2001     | teacher123  |
+Copy `.env` with your Supabase project URL and anon key:
 
-All student and teacher accounts in `src/data/students.js` and
-`src/data/teachers.js` share the same demo password pattern.
+```
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-key
+```
+
+Run the database schema from `supabase/full_schema.sql` in the Supabase SQL Editor, then verify:
+
+```bash
+npm run db:check
+```
+
+Login uses your Supabase database (LRN for students, Teacher ID or email for teachers).
+
+**Remove dummy data and create the admin teacher** — run `supabase/cleanup_single_teacher.sql` in the SQL Editor.
+
+| Field | Value |
+| ----- | ----- |
+| Teacher ID | `T-ADMIN` |
+| Email | `admin@bpans.edu.ph` |
+| Password | `Bpans@2026` |
+| Name | Maria Santos |
 
 ## Architecture
 

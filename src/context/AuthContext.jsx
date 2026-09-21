@@ -1,6 +1,8 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { findStudentByCredentials } from '../data/students.js';
 import { findTeacherByCredentials } from '../data/teachers.js';
+import { isSupabaseConfigured, supabase } from '../lib/supabase.js';
+import { hydrateRecords } from '../services/academicRecords.js';
 
 const AuthContext = createContext(null);
 const SESSION_KEY = 'sf10_session_v1';
@@ -23,42 +25,110 @@ function writeSession(session) {
   }
 }
 
+async function loginViaSupabase(role, id, password) {
+  if (role === 'student') {
+    const { data, error } = await supabase.rpc('login_student', {
+      p_lrn: id.trim(),
+      p_password: password,
+    });
+    if (error) return { ok: false, message: 'Could not reach the server. Please try again.' };
+    if (!data?.length) return { ok: false, message: 'Invalid LRN or password.' };
+    const row = data[0];
+    return {
+      ok: true,
+      session: { role: 'student', id: row.student_id, name: row.display_name },
+    };
+  }
+
+  if (role === 'teacher') {
+    const { data, error } = await supabase.rpc('login_teacher', {
+      p_id_or_email: id.trim(),
+      p_password: password,
+    });
+    if (error) return { ok: false, message: 'Could not reach the server. Please try again.' };
+    if (!data?.length) return { ok: false, message: 'Invalid Teacher ID/email or password.' };
+    const row = data[0];
+    return {
+      ok: true,
+      session: { role: 'teacher', id: row.teacher_id, name: row.display_name },
+    };
+  }
+
+  return { ok: false, message: 'Unknown role.' };
+}
+
+function loginViaLocal(role, id, password) {
+  if (role === 'student') {
+    const student = findStudentByCredentials(id.trim(), password);
+    if (!student) return { ok: false, message: 'Invalid LRN or password.' };
+    return {
+      ok: true,
+      session: { role: 'student', id: student.studentId, name: student.name },
+    };
+  }
+  if (role === 'teacher') {
+    const teacher = findTeacherByCredentials(id.trim(), password);
+    if (!teacher) return { ok: false, message: 'Invalid Teacher ID/email or password.' };
+    return {
+      ok: true,
+      session: { role: 'teacher', id: teacher.teacherId, name: teacher.name },
+    };
+  }
+  return { ok: false, message: 'Unknown role.' };
+}
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [initializing, setInitializing] = useState(true);
+  const [dataReady, setDataReady] = useState(!isSupabaseConfigured());
+
+  const loadData = useCallback(async () => {
+    if (!isSupabaseConfigured()) {
+      setDataReady(true);
+      return;
+    }
+    setDataReady(false);
+    try {
+      await hydrateRecords();
+    } catch (err) {
+      console.error('Failed to load records from Supabase:', err);
+    } finally {
+      setDataReady(true);
+    }
+  }, []);
 
   useEffect(() => {
     const session = readSession();
-    if (session) setUser(session);
-    setInitializing(false);
-  }, []);
+    if (session) {
+      setUser(session);
+      loadData().finally(() => setInitializing(false));
+    } else {
+      setInitializing(false);
+    }
+  }, [loadData]);
 
-  const login = useCallback(({ role, id, password }) => {
-    if (role === 'student') {
-      const student = findStudentByCredentials(id.trim(), password);
-      if (!student) return { ok: false, message: 'Invalid LRN or password.' };
-      const session = { role: 'student', id: student.studentId, name: student.name };
-      setUser(session);
-      writeSession(session);
-      return { ok: true };
-    }
-    if (role === 'teacher') {
-      const teacher = findTeacherByCredentials(id.trim(), password);
-      if (!teacher) return { ok: false, message: 'Invalid Teacher ID/email or password.' };
-      const session = { role: 'teacher', id: teacher.teacherId, name: teacher.name };
-      setUser(session);
-      writeSession(session);
-      return { ok: true };
-    }
-    return { ok: false, message: 'Unknown role.' };
-  }, []);
+  const login = useCallback(async ({ role, id, password }) => {
+    const result = isSupabaseConfigured()
+      ? await loginViaSupabase(role, id, password)
+      : loginViaLocal(role, id, password);
+
+    if (!result.ok) return result;
+
+    setUser(result.session);
+    writeSession(result.session);
+    await loadData();
+    return { ok: true };
+  }, [loadData]);
 
   const logout = useCallback(() => {
     setUser(null);
     writeSession(null);
   }, []);
 
-  const value = useMemo(() => ({ user, initializing, login, logout }), [user, initializing, login, logout]);
+  const value = useMemo(
+    () => ({ user, initializing, dataReady, login, logout, reloadData: loadData }),
+    [user, initializing, dataReady, login, logout, loadData],
+  );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

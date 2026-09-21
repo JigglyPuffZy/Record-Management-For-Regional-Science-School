@@ -24,8 +24,6 @@ export const TEACHER_NAV = [
   { to: '/teacher/students', label: 'Students', icon: Users },
   { to: '/teacher/class-record', label: 'Grades', icon: ClipboardList },
   { to: '/teacher/academic-records', label: 'SF10', icon: GraduationCap },
-  { to: '/teacher/profile', label: 'Profile', icon: UserCircle },
-  { to: '/teacher/settings', label: 'Settings', icon: Settings },
 ];
 
 export function getNavForRole(role) {

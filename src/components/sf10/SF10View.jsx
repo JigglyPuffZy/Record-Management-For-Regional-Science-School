@@ -78,7 +78,7 @@ export default function SF10View({ sf10 }) {
 
   return (
     <div className="print-area">
-      <div className="print-page rounded-2xl border border-brand-500/15 bg-[#fbfaf6] p-6 font-serif text-slate-900 shadow-2xl shadow-brand-500/10 ring-1 ring-white/5 sm:p-8">
+      <div className="print-page rounded-2xl border border-slate-200 bg-[#fbfaf6] p-6 font-serif text-slate-900 shadow-md sm:p-8">
         <div className="no-print mb-4 flex items-center gap-2 rounded-lg bg-amber-50 px-4 py-2.5 text-sm font-semibold text-amber-800">
           <Lock className="h-4 w-4" />
           VIEW ONLY &mdash; this record cannot be edited from this portal

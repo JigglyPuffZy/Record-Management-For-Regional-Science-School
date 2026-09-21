@@ -43,7 +43,7 @@ export default function CreateStudent() {
 
   const set = (key) => (e) => setForm((prev) => ({ ...prev, [key]: e.target.value }));
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.section) {
       toast.error('Please select a section.');
@@ -51,7 +51,7 @@ export default function CreateStudent() {
     }
     setSubmitting(true);
     try {
-      const { student, class: cls } = createStudentAccount(form);
+      const { student, class: cls } = await createStudentAccount(form);
       toast.success(`${student.name} has been enrolled in ${cls.gradeLevel} – ${cls.section}.`);
       navigate('/teacher/students');
     } catch (err) {

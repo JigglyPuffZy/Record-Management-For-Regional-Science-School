@@ -132,6 +132,203 @@
     animation: login-step 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
   }
 
+  /* ── Login: school pass ticket ── */
+  .login-ticket-page {
+    @apply relative flex min-h-screen items-center justify-center px-4 py-10;
+    background: #ebe6dc;
+  }
+
+  .login-ticket-bg {
+    position: absolute;
+    inset: 0;
+    opacity: 0.5;
+    background-image: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 27px,
+      rgba(20, 83, 45, 0.06) 27px,
+      rgba(20, 83, 45, 0.06) 28px
+    );
+    pointer-events: none;
+  }
+
+  .login-ticket-shell {
+    @apply relative z-10 w-full max-w-[920px];
+  }
+
+  .login-ticket-enter {
+    animation: login-ticket-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .login-ticket {
+    @apply relative grid overflow-hidden rounded-2xl border border-stone-300/80 bg-[#fffdf8] shadow-xl shadow-stone-900/10;
+    grid-template-columns: 1fr;
+  }
+
+  @media (min-width: 768px) {
+    .login-ticket {
+      grid-template-columns: minmax(0, 0.92fr) auto minmax(0, 1.08fr);
+    }
+  }
+
+  .login-ticket-notch {
+    position: absolute;
+    width: 22px;
+    height: 22px;
+    border-radius: 9999px;
+    background: #ebe6dc;
+    z-index: 2;
+  }
+
+  .login-ticket-notch--tl { top: -11px; left: 24px; }
+  .login-ticket-notch--tr { top: -11px; right: 24px; }
+  .login-ticket-notch--bl { bottom: -11px; left: 24px; }
+  .login-ticket-notch--br { bottom: -11px; right: 24px; }
+
+  .login-ticket-stub {
+    @apply relative bg-brand-900 text-white;
+  }
+
+  .login-ticket-stub-inner {
+    @apply flex h-full flex-col p-7 sm:p-8;
+  }
+
+  .login-ticket-stamp {
+    @apply mb-6 inline-flex w-fit -rotate-2 rounded border-2 border-dashed border-emerald-300/50 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.22em] text-emerald-200;
+  }
+
+  .login-ticket-brand {
+    @apply flex items-start gap-3;
+  }
+
+  .login-ticket-logo {
+    @apply flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white/95 p-1 ring-1 ring-white/30;
+  }
+
+  .login-ticket-school {
+    font-family: var(--font-serif);
+    @apply text-lg font-bold leading-tight text-white;
+  }
+
+  .login-ticket-division {
+    @apply mt-0.5 text-xs text-emerald-100/75;
+  }
+
+  .login-ticket-meta {
+    @apply mt-8 grid grid-cols-2 gap-4 border-y border-white/15 py-5;
+  }
+
+  .login-ticket-meta-label {
+    @apply text-[10px] font-semibold uppercase tracking-wider text-emerald-200/70;
+  }
+
+  .login-ticket-meta-value {
+    @apply mt-1 text-sm font-bold text-white;
+  }
+
+  .login-ticket-barcode {
+    @apply mt-8 flex h-14 items-end justify-between gap-[3px] px-1;
+  }
+
+  .login-ticket-barcode span {
+    @apply w-[3px] rounded-sm bg-white/35;
+  }
+
+  .login-ticket-footnote {
+    @apply mt-auto pt-8 text-[11px] leading-relaxed text-emerald-100/55;
+  }
+
+  .login-ticket-tear {
+    @apply hidden flex-col items-center justify-center gap-3 bg-[#fffdf8] px-1 md:flex;
+    border-left: 2px dashed #d6d3d1;
+    border-right: 2px dashed #d6d3d1;
+  }
+
+  .login-ticket-tear-dot {
+    @apply h-2 w-2 rounded-full bg-stone-300;
+  }
+
+  .login-ticket-main {
+    @apply p-7 sm:p-8;
+  }
+
+  .login-ticket-head {
+    @apply mb-6;
+  }
+
+  .login-ticket-title {
+    @apply text-2xl font-bold tracking-tight text-slate-900;
+  }
+
+  .login-ticket-sub {
+    @apply mt-1 text-sm text-slate-500;
+  }
+
+  .login-ticket-roles {
+    @apply mb-6 inline-flex rounded-full border border-stone-200 bg-stone-100/80 p-1;
+  }
+
+  .login-ticket-role {
+    @apply flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold text-slate-600 transition-all;
+    @apply hover:text-slate-900;
+  }
+
+  .login-ticket-role--on {
+    @apply bg-white text-brand-800 shadow-sm ring-1 ring-stone-200/80;
+  }
+
+  .login-ticket-form {
+    @apply space-y-5;
+  }
+
+  .login-ticket-field {
+    @apply block;
+  }
+
+  .login-ticket-label {
+    @apply mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-400;
+  }
+
+  .login-ticket-input {
+    @apply h-11 w-full border-0 border-b-2 border-stone-200 bg-transparent px-0 text-base font-medium text-slate-900 placeholder:font-normal placeholder:text-stone-300;
+    @apply focus:border-brand-600 focus:outline-none focus:ring-0;
+  }
+
+  .login-ticket-pass-row {
+    @apply relative;
+  }
+
+  .login-ticket-pass-row .login-ticket-input {
+    @apply pr-10;
+  }
+
+  .login-ticket-eye {
+    @apply absolute right-0 top-1/2 -translate-y-1/2 p-1 text-stone-400 transition-colors hover:text-stone-600;
+  }
+
+  .login-ticket-error {
+    @apply rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700;
+  }
+
+  .login-ticket-btn {
+    @apply mt-2 flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-brand-700 text-sm font-semibold text-white transition-all;
+    @apply hover:bg-brand-600 active:scale-[0.99] disabled:opacity-60;
+  }
+
+  .login-ticket-spinner {
+    @apply h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white;
+  }
+
+  @media (max-width: 767px) {
+    .login-ticket-stub {
+      border-bottom: 2px dashed #d6d3d1;
+    }
+
+    .login-ticket-barcode {
+      @apply hidden;
+    }
+  }
+
   .input-field {
     @apply h-11 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-900 placeholder:text-slate-400 transition-colors;
     @apply focus:border-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-600/15;
@@ -148,9 +345,15 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
+@keyframes login-ticket-in {
+  from { opacity: 0; transform: translateY(14px) scale(0.99); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .page-enter,
-  .login-step-enter {
+  .login-step-enter,
+  .login-ticket-enter {
     animation: none;
   }
 }

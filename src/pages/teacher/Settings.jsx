@@ -1,12 +1,10 @@
 import { useState } from 'react';
-import { Settings as SettingsIcon, RotateCcw, Lock } from 'lucide-react';
+import { Settings as SettingsIcon, Lock } from 'lucide-react';
 import PageContainer from '../../components/layout/PageContainer.jsx';
 import { Card, CardHeader, CardBody } from '../../components/ui/Card.jsx';
 import Input from '../../components/ui/Input.jsx';
 import Button from '../../components/ui/Button.jsx';
-import ConfirmDialog from '../../components/ui/ConfirmDialog.jsx';
 import { useToast } from '../../context/ToastContext.jsx';
-import { resetMockData } from '../../services/academicRecords.js';
 import { cn } from '../../lib/utils.js';
 
 function useLocalToggle(key, initial) {
@@ -46,8 +44,6 @@ export default function TeacherSettings() {
   const [savedConfirm, toggleSavedConfirm] = useLocalToggle('sf10_pref_save_confirm', true);
   const [current, setCurrent] = useState('');
   const [next, setNext] = useState('');
-  const [resetOpen, setResetOpen] = useState(false);
-
   const handlePasswordChange = (e) => {
     e.preventDefault();
     if (!current || !next) { toast.error('Please fill in both password fields.'); return; }
@@ -55,12 +51,6 @@ export default function TeacherSettings() {
     toast.success('Password updated for this session.');
     setCurrent('');
     setNext('');
-  };
-
-  const handleReset = () => {
-    resetMockData();
-    toast.success('Demo grade data has been reset to its original state.');
-    setResetOpen(false);
   };
 
   return (
@@ -84,29 +74,7 @@ export default function TeacherSettings() {
             </form>
           </CardBody>
         </Card>
-
-        <Card className="lg:col-span-2">
-          <CardHeader title="Demo Data" subtitle="Restore the original mock grades for this browser" />
-          <CardBody>
-            <p className="mb-4 text-sm leading-relaxed text-slate-500">
-              This clears any grade edits made during this demo session and restores the original seed data. It does not affect any real backend.
-            </p>
-            <Button variant="danger" icon={RotateCcw} onClick={() => setResetOpen(true)}>
-              Reset Demo Data
-            </Button>
-          </CardBody>
-        </Card>
       </div>
-
-      <ConfirmDialog
-        open={resetOpen}
-        onClose={() => setResetOpen(false)}
-        onConfirm={handleReset}
-        variant="danger"
-        title="Reset demo data?"
-        message="This will discard every grade edit made during this session and restore the original mock data for all classes."
-        confirmLabel="Reset Data"
-      />
     </PageContainer>
   );
 }

@@ -11,11 +11,10 @@ export default function DockNav() {
   return (
     <nav
       aria-label="Main navigation"
-      className="no-print pointer-events-none fixed inset-x-0 bottom-0 z-50 flex justify-center px-4 pb-4 sm:pb-5"
+      className="no-print pointer-events-none fixed inset-x-0 bottom-0 z-50 flex justify-center px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:px-4"
     >
       <div
-        className="pointer-events-auto flex max-w-full items-center gap-0.5 overflow-x-auto rounded-2xl border border-slate-200 bg-white p-1.5 shadow-lg shadow-slate-900/10 scrollbar-thin sm:gap-1"
-        style={{ WebkitOverflowScrolling: 'touch' }}
+        className="pointer-events-auto flex w-full max-w-lg items-stretch justify-between gap-0.5 rounded-2xl border border-slate-200 bg-white/95 p-1.5 shadow-lg shadow-slate-900/10 backdrop-blur-sm sm:max-w-xl sm:gap-1"
       >
         {items.map(({ to, label, icon: Icon }) => {
           const active = location.pathname === to || location.pathname.startsWith(`${to}/`);
@@ -25,14 +24,14 @@ export default function DockNav() {
               to={to}
               title={label}
               className={cn(
-                'flex min-w-[3.5rem] flex-col items-center gap-0.5 rounded-xl px-3 py-2 transition-colors sm:min-w-[4rem] sm:px-3.5',
+                'flex min-h-[3.25rem] min-w-0 flex-1 flex-col items-center justify-center gap-1 rounded-xl px-1 py-2 transition-colors sm:px-2',
                 active
                   ? 'bg-brand-700 text-white'
                   : 'text-slate-500 hover:bg-slate-100 hover:text-slate-800',
               )}
             >
-              <Icon className="h-[18px] w-[18px]" strokeWidth={active ? 2.25 : 2} />
-              <span className="text-[10px] font-semibold leading-none sm:text-[11px]">{label}</span>
+              <Icon className="h-5 w-5 shrink-0" strokeWidth={active ? 2.25 : 2} />
+              <span className="max-w-full truncate text-[10px] font-semibold leading-none sm:text-[11px]">{label}</span>
             </NavLink>
           );
         })}

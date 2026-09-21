@@ -8,9 +8,9 @@ import Spinner from '../components/ui/Spinner.jsx';
  * their own dashboard rather than shown the other portal.
  */
 export default function ProtectedRoute({ role }) {
-  const { user, initializing } = useAuth();
+  const { user, initializing, dataReady } = useAuth();
 
-  if (initializing) return <Spinner className="min-h-screen" label="Loading session..." />;
+  if (initializing || !dataReady) return <Spinner className="min-h-screen" label="Loading records..." />;
   if (!user) return <Navigate to="/login" replace />;
   if (role && user.role !== role) {
     return <Navigate to={user.role === 'teacher' ? '/teacher/dashboard' : '/student/dashboard'} replace />;

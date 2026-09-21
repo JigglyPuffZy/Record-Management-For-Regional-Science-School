@@ -18,11 +18,18 @@ import {
 import {
   getStudentById,
   getStudentsByClass,
-  getStudentByLrn,
   createStudent,
   StudentValidationError,
   resetStudentsData,
+  setStudentsCache,
+  addStudentToCache,
 } from '../data/students.js';
+import { isSupabaseConfigured } from '../lib/supabase.js';
+import {
+  hydrateAllFromDb,
+  createStudentInDb,
+  saveGradeInDb,
+} from './supabaseData.js';
 import { getTeacherById } from '../data/teachers.js';
 import { INITIAL_GRADES } from '../data/grades.js';
 import { getAcademicHistoryForStudent } from '../data/academicHistory.js';
@@ -47,16 +54,40 @@ function loadGrades() {
   return structuredClone(INITIAL_GRADES);
 }
 
-let grades = loadGrades();
+let grades = isSupabaseConfigured() ? [] : loadGrades();
 const listeners = new Set();
+let hydrating = false;
+let hydrated = !isSupabaseConfigured();
 
 function persist() {
+  if (isSupabaseConfigured()) {
+    listeners.forEach((fn) => fn());
+    return;
+  }
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(grades));
   } catch {
     // ignore
   }
   listeners.forEach((fn) => fn());
+}
+
+export async function hydrateRecords() {
+  if (!isSupabaseConfigured() || hydrating) return;
+  hydrating = true;
+  try {
+    const { students, grades: dbGrades } = await hydrateAllFromDb();
+    setStudentsCache(students);
+    grades = dbGrades;
+    hydrated = true;
+    listeners.forEach((fn) => fn());
+  } finally {
+    hydrating = false;
+  }
+}
+
+export function isRecordsHydrated() {
+  return hydrated;
 }
 
 export function subscribeToGrades(listener) {
@@ -272,7 +303,15 @@ export class GradeValidationError extends Error {}
  * Saves a single period grade. `period` is the period id (e.g. term1, quarter1)
  * or the storage field name (quarter1).
  */
-export function saveGrade({ teacherId, studentId, classId, subjectId, schoolYear = ACTIVE_SCHOOL_YEAR, quarter, value }) {
+function applyGradeToCache(row) {
+  const idx = grades.findIndex(
+    (g) => g.studentId === row.studentId && g.classId === row.classId && g.subjectId === row.subjectId && g.schoolYear === row.schoolYear,
+  );
+  if (idx >= 0) grades[idx] = row;
+  else grades.push(row);
+}
+
+export async function saveGrade({ teacherId, studentId, classId, subjectId, schoolYear = ACTIVE_SCHOOL_YEAR, quarter, value }) {
   if (teacherId && !teacherOwnsClassSubject(teacherId, classId, subjectId)) {
     throw new GradeValidationError('You are not assigned to this class and subject.');
   }
@@ -288,6 +327,21 @@ export function saveGrade({ teacherId, studentId, classId, subjectId, schoolYear
     throw new GradeValidationError('Invalid grade. Please enter a value from 0 to 100.');
   }
 
+  if (isSupabaseConfigured()) {
+    const saved = await saveGradeInDb({
+      studentId,
+      classId,
+      subjectId,
+      schoolYear,
+      field: periodDef.field,
+      value: cleared ? null : Number(value),
+      updatedBy: teacherId ?? null,
+    });
+    applyGradeToCache(saved);
+    persist();
+    return enrichGradeRow(saved);
+  }
+
   let record = findGradeRecord(studentId, classId, subjectId, schoolYear);
   if (!record) {
     record = blankRow(studentId, classId, subjectId, schoolYear);
@@ -299,7 +353,7 @@ export function saveGrade({ teacherId, studentId, classId, subjectId, schoolYear
   return enrichGradeRow(record);
 }
 
-export function saveGradesBulk(entries) {
+export async function saveGradesBulk(entries) {
   for (const e of entries) {
     if (e.teacherId && !teacherOwnsClassSubject(e.teacherId, e.classId, e.subjectId)) {
       throw new GradeValidationError('You are not assigned to this class and subject.');
@@ -316,7 +370,11 @@ export function saveGradesBulk(entries) {
       throw new GradeValidationError('Invalid grading period for this grade level.');
     }
   }
-  return entries.map((e) => saveGrade(e));
+  const results = [];
+  for (const e of entries) {
+    results.push(await saveGrade(e));
+  }
+  return results;
 }
 
 function seedGradeRowsForStudent(student, classId, schoolYear = ACTIVE_SCHOOL_YEAR) {
@@ -336,7 +394,7 @@ export class StudentAccountError extends Error {}
 /**
  * Teacher creates a student account and auto-assigns them to the selected section.
  */
-export function createStudentAccount({
+export async function createStudentAccount({
   lrn,
   lastName,
   firstName,
@@ -352,6 +410,29 @@ export function createStudentAccount({
   const cls = findClassByGradeAndSection(gradeLevel, section, schoolYear);
   if (!cls) {
     throw new StudentAccountError(`No class found for ${gradeLevel} - ${section} (${schoolYear}).`);
+  }
+
+  if (isSupabaseConfigured()) {
+    try {
+      const student = await createStudentInDb({
+        lrn,
+        lastName,
+        firstName,
+        middleName,
+        nameExtension,
+        birthdate,
+        sex,
+        classId: cls.id,
+        password,
+      });
+      addStudentToCache(student);
+      const { grades: dbGrades } = await hydrateAllFromDb();
+      grades = dbGrades;
+      persist();
+      return { student, class: cls };
+    } catch (err) {
+      throw new StudentAccountError(err.message);
+    }
   }
 
   let student;
