@@ -4,6 +4,7 @@ import { ListChecks, ClipboardList } from 'lucide-react';
 import PageContainer from '../../components/layout/PageContainer.jsx';
 import { Card, CardBody } from '../../components/ui/Card.jsx';
 import Select from '../../components/ui/Select.jsx';
+import Input from '../../components/ui/Input.jsx';
 import ConfirmDialog from '../../components/ui/ConfirmDialog.jsx';
 import DepEdClassRecordSheet from '../../components/class-record/DepEdClassRecordSheet.jsx';
 import GradeSummary from '../../components/class-record/GradeSummary.jsx';
