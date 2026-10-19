@@ -1,54 +1,56 @@
-import { Info } from 'lucide-react';
+import { useState } from 'react';
+import { ChevronDown, Sparkles } from 'lucide-react';
 import { TRANSMUTATION_SCHOOL_YEAR } from '../../lib/transmutation.js';
 import { formatComponentWeights } from '../../lib/gradeComponents.js';
-
-const STEPS = [
-  'Enter scores from 0 to 100 in Written Works, Performance Tasks, and Examinations.',
-  'The system computes the initial grade using your subject’s WW / PT / EX weights.',
-  'The initial grade is converted using the new transmutation table — that transmuted score is saved to the SF10.',
-];
+import { cn } from '../../lib/utils.js';
 
 export default function ClassRecordGuide({ gradeComponents }) {
-  const weightsText = gradeComponents ? formatComponentWeights(gradeComponents) : 'Weights depend on the subject selected above.';
+  const [open, setOpen] = useState(false);
+  const weightsText = gradeComponents
+    ? formatComponentWeights(gradeComponents)
+    : 'Select a subject to see component weights.';
 
   return (
-    <aside className="cr-guide no-print" aria-label="How to use the class record">
-      <div className="cr-guide-head">
-        <span className="cr-guide-icon" aria-hidden="true">
-          <Info className="h-5 w-5" />
+    <div className="cr-guide-panel no-print">
+      <button
+        type="button"
+        className="cr-guide-toggle"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+      >
+        <span className="cr-guide-toggle-icon" aria-hidden="true">
+          <Sparkles className="h-4 w-4" />
         </span>
-        <div>
-          <h3 className="cr-guide-title">How grading works (SY 2026–2027)</h3>
-          <p className="cr-guide-lead">
-            Step 1: weighted initial grade from component scores. Step 2: transmutation table. Step 3: save transmuted grade.
+        <span className="flex-1 text-left">
+          <span className="cr-guide-toggle-title">Grading guide</span>
+          <span className="cr-guide-toggle-sub">SY 2026–2027 transmutation · {weightsText}</span>
+        </span>
+        <ChevronDown className={cn('h-5 w-5 text-slate-400 transition-transform', open && 'rotate-180')} />
+      </button>
+
+      {open ? (
+        <div className="cr-guide-body">
+          <div className="cr-guide-flow">
+            <div className="cr-flow-step">
+              <span className="cr-flow-num">1</span>
+              <p>Enter scores (0–100) in Written Works, Performance Tasks, and Examinations.</p>
+            </div>
+            <div className="cr-flow-step">
+              <span className="cr-flow-num">2</span>
+              <p>Initial grade is computed using this subject&apos;s WW / PT / EX weights.</p>
+            </div>
+            <div className="cr-flow-step">
+              <span className="cr-flow-num">3</span>
+              <p>
+                Transmutation table ({TRANSMUTATION_SCHOOL_YEAR}) converts initial → transmuted grade saved to SF10.
+              </p>
+            </div>
+          </div>
+          <p className="cr-guide-footnote">
+            Initial grades from 51.34 to 69.99 are not on the official table — coordinate with your registrar if needed.
           </p>
         </div>
-      </div>
-
-      <ol className="cr-guide-steps">
-        {STEPS.map((step, i) => (
-          <li key={i}>
-            <span className="cr-guide-step-num">{i + 1}</span>
-            <span>{step}</span>
-          </li>
-        ))}
-      </ol>
-
-      <div className="cr-guide-legend">
-        <p className="cr-guide-legend-title">Subject weights (this class record)</p>
-        <p className="cr-guide-weights-line">{weightsText}</p>
-        <p className="cr-guide-legend-title mt-4">Typical subjects</p>
-        <ul className="cr-guide-legend-list cr-guide-legend-list--compact">
-          <li>Math, Science, English, Filipino, AP, ESP, TLE, Research: WW 20% · PT 50% · EX 30%</li>
-          <li>MAPEH, Music &amp; Arts, PE &amp; Health, Creative Tech: WW 20% · PT 60% · EX 20%</li>
-        </ul>
-      </div>
-
-      <p className="cr-guide-formula">
-        <strong>Initial grade</strong> = (WW% × WW average) + (PT% × PT average) + (EX% × EX average).
-        <br />
-        <strong>Transmutation ({TRANSMUTATION_SCHOOL_YEAR}):</strong> lookup initial grade in the official table → transmuted grade (60–100).
-      </p>
-    </aside>
+      ) : null}
+    </div>
   );
 }

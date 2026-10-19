@@ -380,232 +380,177 @@
     @apply text-base font-bold text-slate-900;
   }
 
-  /* ── DepEd class record sheet ── */
-  .cr-sheet-card {
-    @apply overflow-hidden;
+  /* ── Class record — premium workspace ── */
+  .cr-workspace {
+    @apply overflow-hidden rounded-3xl border border-slate-200/90 bg-white shadow-lg shadow-slate-900/[0.06];
   }
 
-  .cr-guide {
-    @apply mb-5 rounded-2xl border border-brand-100 bg-brand-50/50 p-5 sm:p-6;
+  .cr-hero {
+    @apply relative overflow-hidden border-b border-white/10 bg-gradient-to-br from-slate-900 via-slate-800 to-brand-900 px-5 py-6 sm:px-8 sm:py-7;
   }
 
-  .cr-guide-head {
-    @apply flex gap-3;
+  .cr-hero-glow {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 100% 0%, rgba(34, 197, 94, 0.22), transparent 55%),
+      radial-gradient(ellipse 50% 40% at 0% 100%, rgba(255, 255, 255, 0.06), transparent 50%);
+    pointer-events: none;
   }
 
-  .cr-guide-icon {
-    @apply flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-brand-700 ring-1 ring-brand-100;
+  .cr-hero-inner {
+    @apply relative flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between;
   }
 
-  .cr-guide-title {
-    @apply text-base font-bold text-slate-900;
+  .cr-hero-eyebrow {
+    @apply text-xs font-semibold uppercase tracking-[0.2em] text-emerald-200/90;
   }
 
-  .cr-guide-lead {
-    @apply mt-1 text-sm leading-relaxed text-slate-600;
+  .cr-hero-title {
+    @apply mt-1 text-2xl font-bold tracking-tight text-white sm:text-3xl;
   }
 
-  .cr-guide-steps {
-    @apply mt-4 space-y-2.5;
+  .cr-hero-sub {
+    @apply mt-2 text-sm text-slate-300;
   }
 
-  .cr-guide-steps li {
-    @apply flex gap-3 text-sm leading-relaxed text-slate-700;
+  .cr-hero-chips {
+    @apply flex flex-wrap gap-2;
   }
 
-  .cr-guide-step-num {
-    @apply flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-700 text-xs font-bold text-white;
+  .cr-chip {
+    @apply inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur-sm;
   }
 
-  .cr-guide-legend {
-    @apply mt-5 border-t border-brand-100/80 pt-4;
+  .cr-chip-dot {
+    @apply h-2 w-2 rounded-full;
   }
 
-  .cr-guide-legend-title {
-    @apply text-xs font-bold uppercase tracking-wide text-slate-500;
+  .cr-chip-dot--ww { @apply bg-amber-400; }
+  .cr-chip-dot--pt { @apply bg-emerald-400; }
+  .cr-chip-dot--ex { @apply bg-sky-400; }
+
+  .cr-guide-panel {
+    @apply border-b border-slate-100 bg-slate-50/80;
   }
 
-  .cr-guide-legend-list {
-    @apply mt-3 grid gap-3 sm:grid-cols-2;
+  .cr-guide-toggle {
+    @apply flex w-full items-center gap-3 px-5 py-3.5 text-left transition-colors hover:bg-slate-100/80 sm:px-6;
   }
 
-  .cr-guide-legend-list li {
-    @apply flex gap-3;
+  .cr-guide-toggle-icon {
+    @apply flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white text-brand-700 shadow-sm ring-1 ring-slate-200/80;
   }
 
-  .cr-legend-swatch {
-    @apply mt-0.5 h-4 w-4 shrink-0 rounded-md ring-1 ring-black/5;
+  .cr-guide-toggle-title {
+    @apply block text-sm font-bold text-slate-900;
   }
 
-  .cr-legend-swatch--ww { @apply bg-amber-100; }
-  .cr-legend-swatch--pt { @apply bg-emerald-100; }
-  .cr-legend-swatch--qa { @apply bg-orange-100; }
-  .cr-legend-swatch--initial { @apply bg-sky-100; }
-  .cr-legend-swatch--transmuted { @apply bg-indigo-100; }
-  .cr-legend-swatch--final { @apply bg-violet-100; }
-
-  .cr-legend-label {
-    @apply text-sm font-semibold text-slate-900;
+  .cr-guide-toggle-sub {
+    @apply mt-0.5 block truncate text-xs text-slate-500;
   }
 
-  .cr-legend-detail {
-    @apply text-xs leading-snug text-slate-600;
+  .cr-guide-body {
+    @apply border-t border-slate-200/80 px-5 pb-5 pt-4 sm:px-6;
   }
 
-  .cr-guide-formula {
-    @apply mt-4 rounded-xl bg-white/80 px-4 py-3 text-sm leading-relaxed text-slate-700 ring-1 ring-brand-100;
+  .cr-guide-flow {
+    @apply grid gap-3 sm:grid-cols-3;
   }
 
-  .cr-sheet-actions {
-    @apply mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between;
+  .cr-flow-step {
+    @apply flex gap-3 rounded-2xl bg-white p-3.5 text-sm leading-relaxed text-slate-600 ring-1 ring-slate-200/80;
   }
 
-  .cr-sheet-status-hints {
-    @apply flex flex-col gap-1.5 text-sm text-slate-600 sm:flex-row sm:flex-wrap sm:gap-4;
+  .cr-flow-num {
+    @apply flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-brand-700 text-xs font-bold text-white;
   }
 
-  .cr-hint {
-    @apply inline-flex items-center gap-2;
+  .cr-guide-footnote {
+    @apply mt-3 text-xs leading-relaxed text-slate-500;
   }
 
-  .cr-hint-swatch {
-    @apply h-3 w-8 rounded-sm ring-1 ring-slate-200;
+  .cr-toolbar {
+    @apply flex flex-col gap-3 border-b border-slate-100 bg-white px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6;
   }
 
-  .cr-hint-swatch--dirty {
-    @apply bg-brand-50;
+  .cr-toolbar-search {
+    @apply w-full max-w-sm flex-1;
   }
 
-  .cr-sheet-paper {
-    @apply rounded-2xl border border-slate-200 bg-white shadow-sm;
+  .cr-toolbar-actions {
+    @apply flex shrink-0 items-center gap-2;
   }
 
-  .cr-sheet-header {
-    @apply border-b border-slate-200 px-4 py-5 sm:px-6;
+  .cr-grid-shell {
+    @apply bg-slate-50/50 p-3 sm:p-4;
   }
 
-  .cr-sheet-header-grid {
-    @apply grid grid-cols-1 gap-3 text-sm sm:grid-cols-2;
+  .cr-grid-scroll {
+    @apply overflow-x-auto rounded-2xl bg-white ring-1 ring-slate-200/90;
   }
 
-  .cr-meta-label {
-    @apply block text-xs font-semibold uppercase tracking-wide text-slate-400;
-  }
-
-  .cr-meta-value {
-    @apply mt-0.5 block font-semibold text-slate-900;
-  }
-
-  .cr-sheet-title {
-    @apply mt-5 text-center text-xl font-bold text-slate-900 sm:text-2xl;
-  }
-
-  .cr-sheet-subtitle {
-    @apply mt-1 text-center text-sm text-slate-500;
-  }
-
-  .cr-sheet-weights {
-    @apply mt-4 rounded-xl bg-slate-50 px-4 py-2.5 text-center text-sm font-medium text-slate-700 ring-1 ring-slate-200;
-  }
-
-  .cr-guide-weights-line {
-    @apply mt-2 text-sm font-semibold text-brand-800;
-  }
-
-  .cr-guide-legend-list--compact {
-    @apply mt-2 space-y-1.5 text-sm text-slate-600;
-  }
-
-  .cr-grade-value--emphasis {
-    @apply text-brand-700;
-  }
-
-  .cr-grade-warning {
-    @apply text-xs font-bold text-amber-700;
-  }
-
-  .cr-table-caption {
-    @apply sr-only;
-  }
-
-  .cr-sheet-scroll {
-    @apply overflow-x-auto;
+  .cr-grid-hint {
+    @apply mt-2 px-1 text-center text-[11px] text-slate-400;
   }
 
   .cr-table {
-    @apply w-full min-w-[1100px] border-collapse text-sm;
+    @apply w-full min-w-[1080px] border-collapse text-sm;
   }
 
-  .cr-th {
-    @apply border border-slate-200/80 px-1.5 py-2 text-center align-bottom sm:px-2;
+  .cr-head-row .cr-th {
+    @apply border-b border-slate-200 bg-slate-900 px-2 py-3 text-center;
   }
 
-  .cr-th-title {
-    @apply block text-[11px] font-bold leading-snug text-slate-900 sm:text-xs;
+  .cr-head-row .cr-th-title {
+    @apply text-[11px] font-bold uppercase tracking-wide text-white sm:text-xs;
   }
 
-  .cr-th-detail {
-    @apply mt-0.5 block text-[9px] font-medium normal-case leading-tight text-slate-600 sm:text-[10px];
+  .cr-head-row .cr-th-detail {
+    @apply mt-0.5 text-[10px] font-medium normal-case text-slate-400;
   }
+
+  .cr-head-row .cr-th--index,
+  .cr-head-row .cr-th--name {
+    @apply bg-slate-900;
+  }
+
+  .cr-subhead-row .cr-th {
+    @apply border-b border-slate-200 bg-slate-100 px-1 py-2 text-[10px] font-bold text-slate-600;
+  }
+
+  .cr-th--ww-sub { @apply border-l-2 border-l-amber-400/80; }
+  .cr-th--pt-sub { @apply border-l-2 border-l-emerald-500/80; }
+  .cr-th--qa-sub { @apply border-l-2 border-l-sky-500/80; }
 
   .cr-th--index {
-    @apply sticky left-0 z-20 w-10 bg-slate-100;
+    @apply sticky left-0 z-30 w-11 min-w-[2.75rem];
   }
 
   .cr-th--name {
-    @apply sticky left-10 z-20 min-w-[11rem] bg-rose-50 text-left sm:min-w-[14rem];
+    @apply sticky left-11 z-30 min-w-[12rem] text-left sm:min-w-[14rem];
   }
 
-  .cr-th--ww {
-    @apply bg-amber-50;
-  }
-
-  .cr-th--ww-sub {
-    @apply bg-amber-50/80 text-[9px] font-bold normal-case text-amber-950/90;
-  }
-
-  .cr-th--pt {
-    @apply bg-emerald-50;
-  }
-
-  .cr-th--pt-sub {
-    @apply bg-emerald-50/80 text-[9px] font-semibold normal-case text-emerald-900/80;
-  }
-
-  .cr-th--qa {
-    @apply bg-orange-50;
-  }
-
-  .cr-th--qa-sub {
-    @apply bg-orange-50/80 text-[9px] font-semibold normal-case text-orange-900/80;
-  }
-
-  .cr-th--initial {
-    @apply min-w-[4.5rem] bg-sky-50;
-  }
-
-  .cr-th--transmuted {
-    @apply min-w-[5rem] bg-indigo-50;
-  }
-
-  .cr-th--final {
-    @apply min-w-[4.5rem] bg-violet-50;
-  }
-
-  .cr-th--action {
-    @apply min-w-[5.5rem] bg-slate-50;
+  .cr-head-row .cr-th--name .cr-th-title,
+  .cr-head-row .cr-th--name .cr-th-detail {
+    @apply text-left;
   }
 
   .cr-td {
-    @apply border border-slate-100 px-1 py-1 align-middle;
+    @apply border-b border-slate-100 px-1 py-1 align-middle;
   }
 
   .cr-td--index {
-    @apply sticky left-0 z-10 bg-slate-50 text-center text-xs font-semibold tabular-nums text-slate-500;
+    @apply sticky left-0 z-20 bg-white text-center text-xs font-semibold tabular-nums text-slate-400 shadow-[4px_0_12px_-4px_rgba(15,23,42,0.08)];
   }
 
   .cr-td--name {
-    @apply sticky left-10 z-10 bg-rose-50/90 px-2 py-2 text-left font-normal;
+    @apply sticky left-11 z-20 bg-white px-3 py-2.5 text-left shadow-[4px_0_12px_-4px_rgba(15,23,42,0.08)];
+  }
+
+  .cr-body-row:nth-child(even) .cr-td--index,
+  .cr-body-row:nth-child(even) .cr-td--name {
+    @apply bg-slate-50/90;
   }
 
   .cr-student-name {
@@ -613,64 +558,83 @@
   }
 
   .cr-student-lrn {
-    @apply mt-0.5 block text-[11px] font-medium text-slate-500;
-  }
-
-  .cr-grade-value {
-    @apply text-sm font-bold tabular-nums text-slate-900;
+    @apply mt-0.5 block font-mono text-[10px] font-medium text-slate-400;
   }
 
   .cr-td--score {
-    @apply bg-white p-0.5;
+    @apply p-0.5;
   }
 
-  .cr-td--computed {
-    @apply bg-sky-50/40 text-center text-sm font-bold tabular-nums text-slate-900;
+  .cr-td--ww { @apply bg-amber-50/20; }
+  .cr-td--pt { @apply bg-emerald-50/20; }
+  .cr-td--qa { @apply bg-sky-50/25; }
+
+  .cr-td--result {
+    @apply bg-slate-50/80 px-2 py-2 text-center;
   }
 
   .cr-td--transmuted {
-    @apply bg-indigo-50/50;
-  }
-
-  .cr-td--final {
-    @apply bg-violet-50/40;
+    @apply bg-brand-50/30;
   }
 
   .cr-td--action {
-    @apply bg-slate-50/50 text-center;
+    @apply bg-white px-2 py-2 text-center;
   }
 
-  .cr-table-row--dirty {
-    @apply bg-brand-50/40;
+  .cr-body-row--dirty .cr-td--index,
+  .cr-body-row--dirty .cr-td--name {
+    @apply bg-amber-50/90;
+  }
+
+  .cr-body-row--dirty .cr-td--index {
+    box-shadow: inset 3px 0 0 0 #16a34a;
+  }
+
+  .cr-result-pill {
+    @apply inline-flex min-w-[2.5rem] items-center justify-center rounded-lg bg-white px-2 py-1 text-xs font-bold tabular-nums text-slate-800 ring-1 ring-slate-200/90;
+  }
+
+  .cr-result-pill--primary {
+    @apply bg-brand-700 text-white ring-brand-600;
+  }
+
+  .cr-result-pill--muted {
+    @apply text-slate-600;
+  }
+
+  .cr-result-na {
+    @apply text-[10px] font-bold uppercase tracking-wide text-amber-700;
   }
 
   .cr-score-cell {
-    @apply h-8 w-full min-w-[2.25rem] max-w-[2.75rem] rounded-md border border-slate-200 bg-white px-0.5 text-center text-xs font-semibold tabular-nums text-slate-900 transition-colors focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/15;
+    @apply mx-auto block h-9 w-full min-w-[2.5rem] max-w-[2.85rem] rounded-lg border border-transparent bg-transparent px-0.5 text-center text-xs font-semibold tabular-nums text-slate-800 transition-all hover:border-slate-200 hover:bg-white focus:border-brand-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-500/20;
   }
 
   .cr-score-cell--invalid {
-    @apply border-rose-400 text-rose-700 focus:border-rose-500 focus:ring-rose-500/15;
+    @apply border-rose-300 bg-rose-50 text-rose-700 focus:border-rose-500 focus:ring-rose-500/20;
   }
 
   .cr-score-cell--disabled {
-    @apply bg-slate-50 text-slate-400;
-  }
-
-  .cr-sheet-footer {
-    @apply border-t border-slate-200 px-4 py-4 sm:px-6;
-  }
-
-  .cr-sheet-footer-note {
-    @apply text-sm leading-relaxed text-slate-600;
+    @apply text-slate-300;
   }
 
   @media print {
-    .cr-sheet-paper {
+    .cr-workspace {
       @apply rounded-none border-0 shadow-none;
     }
 
+    .cr-hero {
+      @apply bg-white text-black;
+    }
+
+    .cr-hero-title,
+    .cr-hero-sub,
+    .cr-hero-eyebrow {
+      @apply text-black;
+    }
+
     .cr-score-cell {
-      @apply border-slate-300;
+      @apply border-slate-300 bg-white;
     }
   }
 

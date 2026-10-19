@@ -1,11 +1,9 @@
 import { useEffect, useMemo, useState, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Search, Save, ListChecks, ClipboardList } from 'lucide-react';
+import { ListChecks, ClipboardList } from 'lucide-react';
 import PageContainer from '../../components/layout/PageContainer.jsx';
 import { Card, CardBody } from '../../components/ui/Card.jsx';
 import Select from '../../components/ui/Select.jsx';
-import Input from '../../components/ui/Input.jsx';
-import Button from '../../components/ui/Button.jsx';
 import ConfirmDialog from '../../components/ui/ConfirmDialog.jsx';
 import DepEdClassRecordSheet from '../../components/class-record/DepEdClassRecordSheet.jsx';
 import GradeSummary from '../../components/class-record/GradeSummary.jsx';
@@ -310,31 +308,23 @@ export default function TeacherClassRecord() {
             <GradeSummary rows={rows} activePeriod={gradingPeriod} periods={periods} />
           </div>
 
-          <Card className="cr-sheet-card">
-            <CardBody className="p-4 sm:p-5">
-              <div className="mb-4 flex flex-wrap items-center justify-between gap-3 no-print">
-                <div className="w-full max-w-xs">
-                  <Input icon={Search} placeholder="Search by name or LRN" value={query} onChange={(e) => setQuery(e.target.value)} />
-                </div>
-                <Button icon={Save} onClick={handleSaveAll} disabled={dirtyIds.size === 0}>
-                  Save all term grades ({dirtyIds.size})
-                </Button>
-              </div>
-              <DepEdClassRecordSheet
-                subjectName={subjectName}
-                classLabel={classLabel}
-                schoolYear={schoolYear}
-                periodLabel={periodLabel}
-                gradeComponents={gradeComponents}
-                rows={filteredRows}
-                scoresByStudent={scoresByStudent}
-                invalidCells={invalidCells}
-                dirtyIds={dirtyIds}
-                onScoreChange={handleScoreChange}
-                onSaveRow={handleSaveRow}
-              />
-            </CardBody>
-          </Card>
+          <DepEdClassRecordSheet
+            subjectName={subjectName}
+            classLabel={classLabel}
+            schoolYear={schoolYear}
+            periodLabel={periodLabel}
+            gradeComponents={gradeComponents}
+            rows={filteredRows}
+            scoresByStudent={scoresByStudent}
+            invalidCells={invalidCells}
+            dirtyIds={dirtyIds}
+            onScoreChange={handleScoreChange}
+            onSaveRow={handleSaveRow}
+            searchQuery={query}
+            onSearchChange={setQuery}
+            onSaveAll={handleSaveAll}
+            pendingSaveCount={dirtyIds.size}
+          />
         </>
       ) : (
         <Card>
