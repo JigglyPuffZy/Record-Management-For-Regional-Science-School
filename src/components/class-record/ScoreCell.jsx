@@ -9,6 +9,7 @@ export default function ScoreCell({ value, onChange, invalid, disabled, ariaLabe
       value={value ?? ''}
       disabled={disabled}
       onChange={(e) => onChange(e.target.value)}
+      placeholder="—"
       className={cn(
         'cr-score-cell',
         invalid && 'cr-score-cell--invalid',

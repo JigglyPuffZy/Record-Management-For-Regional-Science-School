@@ -158,7 +158,7 @@ export default function DepEdClassRecordSheet({
                     <td className="cr-td cr-td--index">{index + 1}</td>
                     <th className="cr-td cr-td--name" scope="row">
                       <span className="cr-student-name">{name}</span>
-                      <span className="cr-student-lrn">{row.student.lrn}</span>
+                      <span className="cr-student-lrn">LRN {row.student.lrn}</span>
                     </th>
                     {wwCols.map((i) => {
                       const key = `${studentId}:ww:${i}`;
