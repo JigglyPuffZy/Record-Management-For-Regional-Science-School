@@ -10,10 +10,10 @@ export default function GradeSummary({ rows, activePeriod, periods }) {
 
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-      <StatCard label="Students" value={total} icon={Users} tone="slate" />
-      <StatCard label="Graded" value={`${graded}/${total}`} icon={CheckCircle2} tone="emerald" />
-      <StatCard label="Pending" value={total - graded} icon={Clock} tone="amber" />
-      <StatCard label="Class Average" value={average ?? '—'} icon={TrendingUp} tone="brand" />
+      <StatCard label="Enrolled" value={total} icon={Users} tone="slate" hint="Students in this class" />
+      <StatCard label="Saved for this term" value={`${graded}/${total}`} icon={CheckCircle2} tone="emerald" hint="Term grades posted" />
+      <StatCard label="Not yet saved" value={total - graded} icon={Clock} tone="amber" hint="Still need a term grade" />
+      <StatCard label="Class average" value={average ?? '—'} icon={TrendingUp} tone="brand" hint="Based on saved term grades" />
     </div>
   );
 }

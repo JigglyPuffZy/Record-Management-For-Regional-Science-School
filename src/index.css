@@ -380,6 +380,300 @@
     @apply text-base font-bold text-slate-900;
   }
 
+  /* ── DepEd class record sheet ── */
+  .cr-sheet-card {
+    @apply overflow-hidden;
+  }
+
+  .cr-guide {
+    @apply mb-5 rounded-2xl border border-brand-100 bg-brand-50/50 p-5 sm:p-6;
+  }
+
+  .cr-guide-head {
+    @apply flex gap-3;
+  }
+
+  .cr-guide-icon {
+    @apply flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-brand-700 ring-1 ring-brand-100;
+  }
+
+  .cr-guide-title {
+    @apply text-base font-bold text-slate-900;
+  }
+
+  .cr-guide-lead {
+    @apply mt-1 text-sm leading-relaxed text-slate-600;
+  }
+
+  .cr-guide-steps {
+    @apply mt-4 space-y-2.5;
+  }
+
+  .cr-guide-steps li {
+    @apply flex gap-3 text-sm leading-relaxed text-slate-700;
+  }
+
+  .cr-guide-step-num {
+    @apply flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-brand-700 text-xs font-bold text-white;
+  }
+
+  .cr-guide-legend {
+    @apply mt-5 border-t border-brand-100/80 pt-4;
+  }
+
+  .cr-guide-legend-title {
+    @apply text-xs font-bold uppercase tracking-wide text-slate-500;
+  }
+
+  .cr-guide-legend-list {
+    @apply mt-3 grid gap-3 sm:grid-cols-2;
+  }
+
+  .cr-guide-legend-list li {
+    @apply flex gap-3;
+  }
+
+  .cr-legend-swatch {
+    @apply mt-0.5 h-4 w-4 shrink-0 rounded-md ring-1 ring-black/5;
+  }
+
+  .cr-legend-swatch--ww { @apply bg-amber-100; }
+  .cr-legend-swatch--pt { @apply bg-emerald-100; }
+  .cr-legend-swatch--qa { @apply bg-orange-100; }
+  .cr-legend-swatch--initial { @apply bg-sky-100; }
+  .cr-legend-swatch--transmuted { @apply bg-indigo-100; }
+  .cr-legend-swatch--final { @apply bg-violet-100; }
+
+  .cr-legend-label {
+    @apply text-sm font-semibold text-slate-900;
+  }
+
+  .cr-legend-detail {
+    @apply text-xs leading-snug text-slate-600;
+  }
+
+  .cr-guide-formula {
+    @apply mt-4 rounded-xl bg-white/80 px-4 py-3 text-sm leading-relaxed text-slate-700 ring-1 ring-brand-100;
+  }
+
+  .cr-sheet-actions {
+    @apply mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between;
+  }
+
+  .cr-sheet-status-hints {
+    @apply flex flex-col gap-1.5 text-sm text-slate-600 sm:flex-row sm:flex-wrap sm:gap-4;
+  }
+
+  .cr-hint {
+    @apply inline-flex items-center gap-2;
+  }
+
+  .cr-hint-swatch {
+    @apply h-3 w-8 rounded-sm ring-1 ring-slate-200;
+  }
+
+  .cr-hint-swatch--dirty {
+    @apply bg-brand-50;
+  }
+
+  .cr-sheet-paper {
+    @apply rounded-2xl border border-slate-200 bg-white shadow-sm;
+  }
+
+  .cr-sheet-header {
+    @apply border-b border-slate-200 px-4 py-5 sm:px-6;
+  }
+
+  .cr-sheet-header-grid {
+    @apply grid grid-cols-1 gap-3 text-sm sm:grid-cols-2;
+  }
+
+  .cr-meta-label {
+    @apply block text-xs font-semibold uppercase tracking-wide text-slate-400;
+  }
+
+  .cr-meta-value {
+    @apply mt-0.5 block font-semibold text-slate-900;
+  }
+
+  .cr-sheet-title {
+    @apply mt-5 text-center text-xl font-bold text-slate-900 sm:text-2xl;
+  }
+
+  .cr-sheet-subtitle {
+    @apply mt-1 text-center text-sm text-slate-500;
+  }
+
+  .cr-sheet-weights {
+    @apply mt-4 rounded-xl bg-slate-50 px-4 py-2.5 text-center text-sm font-medium text-slate-700 ring-1 ring-slate-200;
+  }
+
+  .cr-guide-weights-line {
+    @apply mt-2 text-sm font-semibold text-brand-800;
+  }
+
+  .cr-guide-legend-list--compact {
+    @apply mt-2 space-y-1.5 text-sm text-slate-600;
+  }
+
+  .cr-grade-value--emphasis {
+    @apply text-brand-700;
+  }
+
+  .cr-grade-warning {
+    @apply text-xs font-bold text-amber-700;
+  }
+
+  .cr-table-caption {
+    @apply sr-only;
+  }
+
+  .cr-sheet-scroll {
+    @apply overflow-x-auto;
+  }
+
+  .cr-table {
+    @apply w-full min-w-[1100px] border-collapse text-sm;
+  }
+
+  .cr-th {
+    @apply border border-slate-200/80 px-1.5 py-2 text-center align-bottom sm:px-2;
+  }
+
+  .cr-th-title {
+    @apply block text-[11px] font-bold leading-snug text-slate-900 sm:text-xs;
+  }
+
+  .cr-th-detail {
+    @apply mt-0.5 block text-[9px] font-medium normal-case leading-tight text-slate-600 sm:text-[10px];
+  }
+
+  .cr-th--index {
+    @apply sticky left-0 z-20 w-10 bg-slate-100;
+  }
+
+  .cr-th--name {
+    @apply sticky left-10 z-20 min-w-[11rem] bg-rose-50 text-left sm:min-w-[14rem];
+  }
+
+  .cr-th--ww {
+    @apply bg-amber-50;
+  }
+
+  .cr-th--ww-sub {
+    @apply bg-amber-50/80 text-[9px] font-bold normal-case text-amber-950/90;
+  }
+
+  .cr-th--pt {
+    @apply bg-emerald-50;
+  }
+
+  .cr-th--pt-sub {
+    @apply bg-emerald-50/80 text-[9px] font-semibold normal-case text-emerald-900/80;
+  }
+
+  .cr-th--qa {
+    @apply bg-orange-50;
+  }
+
+  .cr-th--qa-sub {
+    @apply bg-orange-50/80 text-[9px] font-semibold normal-case text-orange-900/80;
+  }
+
+  .cr-th--initial {
+    @apply min-w-[4.5rem] bg-sky-50;
+  }
+
+  .cr-th--transmuted {
+    @apply min-w-[5rem] bg-indigo-50;
+  }
+
+  .cr-th--final {
+    @apply min-w-[4.5rem] bg-violet-50;
+  }
+
+  .cr-th--action {
+    @apply min-w-[5.5rem] bg-slate-50;
+  }
+
+  .cr-td {
+    @apply border border-slate-100 px-1 py-1 align-middle;
+  }
+
+  .cr-td--index {
+    @apply sticky left-0 z-10 bg-slate-50 text-center text-xs font-semibold tabular-nums text-slate-500;
+  }
+
+  .cr-td--name {
+    @apply sticky left-10 z-10 bg-rose-50/90 px-2 py-2 text-left font-normal;
+  }
+
+  .cr-student-name {
+    @apply block text-sm font-semibold leading-snug text-slate-900;
+  }
+
+  .cr-student-lrn {
+    @apply mt-0.5 block text-[11px] font-medium text-slate-500;
+  }
+
+  .cr-grade-value {
+    @apply text-sm font-bold tabular-nums text-slate-900;
+  }
+
+  .cr-td--score {
+    @apply bg-white p-0.5;
+  }
+
+  .cr-td--computed {
+    @apply bg-sky-50/40 text-center text-sm font-bold tabular-nums text-slate-900;
+  }
+
+  .cr-td--transmuted {
+    @apply bg-indigo-50/50;
+  }
+
+  .cr-td--final {
+    @apply bg-violet-50/40;
+  }
+
+  .cr-td--action {
+    @apply bg-slate-50/50 text-center;
+  }
+
+  .cr-table-row--dirty {
+    @apply bg-brand-50/40;
+  }
+
+  .cr-score-cell {
+    @apply h-8 w-full min-w-[2.25rem] max-w-[2.75rem] rounded-md border border-slate-200 bg-white px-0.5 text-center text-xs font-semibold tabular-nums text-slate-900 transition-colors focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/15;
+  }
+
+  .cr-score-cell--invalid {
+    @apply border-rose-400 text-rose-700 focus:border-rose-500 focus:ring-rose-500/15;
+  }
+
+  .cr-score-cell--disabled {
+    @apply bg-slate-50 text-slate-400;
+  }
+
+  .cr-sheet-footer {
+    @apply border-t border-slate-200 px-4 py-4 sm:px-6;
+  }
+
+  .cr-sheet-footer-note {
+    @apply text-sm leading-relaxed text-slate-600;
+  }
+
+  @media print {
+    .cr-sheet-paper {
+      @apply rounded-none border-0 shadow-none;
+    }
+
+    .cr-score-cell {
+      @apply border-slate-300;
+    }
+  }
+
   .login-step-enter {
     animation: login-step 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
   }

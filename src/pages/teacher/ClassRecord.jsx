@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Search, Save, ListChecks, ClipboardList } from 'lucide-react';
 import PageContainer from '../../components/layout/PageContainer.jsx';
@@ -7,7 +7,7 @@ import Select from '../../components/ui/Select.jsx';
 import Input from '../../components/ui/Input.jsx';
 import Button from '../../components/ui/Button.jsx';
 import ConfirmDialog from '../../components/ui/ConfirmDialog.jsx';
-import ClassRecordTable from '../../components/class-record/ClassRecordTable.jsx';
+import DepEdClassRecordSheet from '../../components/class-record/DepEdClassRecordSheet.jsx';
 import GradeSummary from '../../components/class-record/GradeSummary.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useToast } from '../../context/ToastContext.jsx';
@@ -17,13 +17,54 @@ import {
   getActiveSchoolYear,
   getGradingPeriodsForClass,
   getClassById,
+  getClassLabel,
   saveGrade,
   saveGradesBulk,
   subscribeToGrades,
   GradeValidationError,
 } from '../../services/academicRecords.js';
-import { getCurriculumForGradeLevel } from '../../data/curriculum.js';
+import { getSubjectById } from '../../data/subjects.js';
 import { isValidGrade } from '../../lib/utils.js';
+import {
+  sheetStorageKey,
+  loadSheetScores,
+  saveSheetScores,
+  createEmptyScoreSet,
+  normalizeScoreSet,
+  computeInitialGrade,
+} from '../../lib/classRecordSheet.js';
+import { getGradeComponentsForSubject } from '../../lib/gradeComponents.js';
+import { transmuteInitialGrade } from '../../lib/transmutation.js';
+
+function isValidScoreCell(value) {
+  if (value === '' || value === null || value === undefined) return true;
+  return isValidGrade(value);
+}
+
+function buildScoresState(rows, stored) {
+  const next = {};
+  for (const row of rows) {
+    const id = row.student.studentId;
+    next[id] = normalizeScoreSet(stored[id]);
+  }
+  return next;
+}
+
+function collectInvalidCells(scoresByStudent) {
+  const invalid = new Set();
+  for (const [studentId, scores] of Object.entries(scoresByStudent)) {
+    scores.ww.forEach((val, i) => {
+      if (!isValidScoreCell(val)) invalid.add(`${studentId}:ww:${i}`);
+    });
+    scores.pt.forEach((val, i) => {
+      if (!isValidScoreCell(val)) invalid.add(`${studentId}:pt:${i}`);
+    });
+    scores.qa.forEach((val, i) => {
+      if (!isValidScoreCell(val)) invalid.add(`${studentId}:qa:${i}`);
+    });
+  }
+  return invalid;
+}
 
 export default function TeacherClassRecord() {
   const { user } = useAuth();
@@ -40,9 +81,7 @@ export default function TeacherClassRecord() {
 
   const [classId, setClassId] = useState(() => searchParams.get('classId') || classOptions[0]?.value || '');
   const cls = getClassById(classId);
-  const gradeLevel = cls?.gradeLevel ?? 'Grade 7';
   const periods = getGradingPeriodsForClass(classId);
-  const curriculum = getCurriculumForGradeLevel(gradeLevel);
 
   const subjectOptions = useMemo(
     () => assignments.filter((a) => a.classId === classId).map((a) => ({ value: a.subjectId, label: a.subjectName })),
@@ -53,9 +92,9 @@ export default function TeacherClassRecord() {
   const [gradingPeriod, setGradingPeriod] = useState(() => periods[0]?.id ?? 'term1');
   const [query, setQuery] = useState('');
 
-  const [values, setValues] = useState({});
+  const [scoresByStudent, setScoresByStudent] = useState({});
   const [dirtyIds, setDirtyIds] = useState(new Set());
-  const [invalidIds, setInvalidIds] = useState(new Set());
+  const [invalidCells, setInvalidCells] = useState(new Set());
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [refreshTick, setRefreshTick] = useState(0);
@@ -73,6 +112,28 @@ export default function TeacherClassRecord() {
   );
 
   const activeField = periods.find((p) => p.id === gradingPeriod)?.field;
+  const subjectName =
+    getSubjectById(subjectId)?.name ?? subjectOptions.find((s) => s.value === subjectId)?.label ?? '—';
+  const gradeComponents = useMemo(
+    () => getGradeComponentsForSubject(subjectId, subjectName),
+    [subjectId, subjectName],
+  );
+
+  const resolveTermGrade = useCallback(
+    (scores) => {
+      const initial = scores ? computeInitialGrade(scores, gradeComponents) : null;
+      const transmuted = initial != null ? transmuteInitialGrade(initial) : null;
+      return { initial, transmuted };
+    },
+    [gradeComponents],
+  );
+
+  const storageKey = useMemo(
+    () => (classId && subjectId && gradingPeriod
+      ? sheetStorageKey({ classId, subjectId, schoolYear, periodId: gradingPeriod })
+      : null),
+    [classId, subjectId, schoolYear, gradingPeriod],
+  );
 
   useEffect(() => {
     if (!classOptions.some((c) => c.value === classId)) {
@@ -92,15 +153,30 @@ export default function TeacherClassRecord() {
   }, [classId, subjectId]);
 
   useEffect(() => {
-    const initial = {};
-    for (const row of rows) {
-      initial[row.student.studentId] = activeField ? row[activeField] ?? '' : '';
+    if (!storageKey || !rows.length) {
+      setScoresByStudent({});
+      setDirtyIds(new Set());
+      setInvalidCells(new Set());
+      return;
     }
-    setValues(initial);
-    setDirtyIds(new Set());
-    setInvalidIds(new Set());
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [classId, subjectId, gradingPeriod, rows.length, activeField]);
+    const stored = loadSheetScores(storageKey);
+    const nextScores = buildScoresState(rows, stored);
+    setScoresByStudent(nextScores);
+    setInvalidCells(collectInvalidCells(nextScores));
+
+    const dirty = new Set();
+    for (const row of rows) {
+      const id = row.student.studentId;
+      const { transmuted } = resolveTermGrade(nextScores[id] ?? createEmptyScoreSet());
+      const saved = activeField ? row[activeField] : null;
+      if (transmuted != null && transmuted !== saved) dirty.add(id);
+    }
+    setDirtyIds(dirty);
+  }, [storageKey, rows, activeField, resolveTermGrade]);
+
+  const persistScores = useCallback((nextScores) => {
+    if (storageKey) saveSheetScores(storageKey, nextScores);
+  }, [storageKey]);
 
   const filteredRows = rows.filter((row) => {
     const q = query.trim().toLowerCase();
@@ -112,18 +188,38 @@ export default function TeacherClassRecord() {
     );
   });
 
-  function handleChange(studentId, raw) {
-    setValues((prev) => ({ ...prev, [studentId]: raw }));
-    setDirtyIds((prev) => new Set(prev).add(studentId));
-    setInvalidIds((prev) => {
-      const next = new Set(prev);
-      if (raw !== '' && !isValidGrade(raw)) next.add(studentId);
-      else next.delete(studentId);
+  function handleScoreChange(studentId, category, index, raw) {
+    setScoresByStudent((prev) => {
+      const current = prev[studentId] ?? createEmptyScoreSet();
+      const nextSet = {
+        ...current,
+        [category]: current[category].map((v, i) => (i === index ? raw : v)),
+      };
+      const next = { ...prev, [studentId]: nextSet };
+      persistScores(next);
+      setInvalidCells(collectInvalidCells(next));
       return next;
     });
+    setDirtyIds((prev) => new Set(prev).add(studentId));
   }
 
   async function handleSaveRow(studentId) {
+    const scores = scoresByStudent[studentId];
+    const { initial, transmuted } = resolveTermGrade(scores);
+    if (initial === null) {
+      toast.error('Enter at least one score so the system can compute the initial grade.');
+      return;
+    }
+    if (transmuted === null) {
+      toast.error(
+        'Initial grade is outside the SY 2026–2027 transmutation table. Adjust scores or verify manually.',
+      );
+      return;
+    }
+    if (!isValidGrade(String(transmuted))) {
+      toast.error('Invalid transmuted grade. Please check entered scores.');
+      return;
+    }
     try {
       await saveGrade({
         teacherId: user.id,
@@ -132,7 +228,7 @@ export default function TeacherClassRecord() {
         subjectId,
         schoolYear,
         quarter: gradingPeriod,
-        value: values[studentId],
+        value: String(transmuted),
       });
       setDirtyIds((prev) => {
         const next = new Set(prev);
@@ -147,8 +243,8 @@ export default function TeacherClassRecord() {
   }
 
   function handleSaveAll() {
-    if (invalidIds.size > 0) {
-      toast.error('Invalid grade. Please enter a value from 0 to 100.');
+    if (invalidCells.size > 0) {
+      toast.error('Invalid score. Please enter values from 0 to 100.');
       return;
     }
     setConfirmOpen(true);
@@ -157,15 +253,22 @@ export default function TeacherClassRecord() {
   async function confirmSaveAll() {
     setSaving(true);
     try {
-      const entries = [...dirtyIds].map((studentId) => ({
-        teacherId: user.id,
-        studentId,
-        classId,
-        subjectId,
-        schoolYear,
-        quarter: gradingPeriod,
-        value: values[studentId],
-      }));
+      const entries = [...dirtyIds].map((studentId) => {
+        const { transmuted } = resolveTermGrade(scoresByStudent[studentId] ?? createEmptyScoreSet());
+        return {
+          teacherId: user.id,
+          studentId,
+          classId,
+          subjectId,
+          schoolYear,
+          quarter: gradingPeriod,
+          value: transmuted != null ? String(transmuted) : '',
+        };
+      }).filter((e) => e.value !== '');
+      if (!entries.length) {
+        toast.error('No computed grades to save.');
+        return;
+      }
       await saveGradesBulk(entries);
       setDirtyIds(new Set());
       toast.success('Grades successfully saved.');
@@ -179,20 +282,21 @@ export default function TeacherClassRecord() {
   }
 
   const periodLabel = periods.find((p) => p.id === gradingPeriod)?.label ?? gradingPeriod;
+  const classLabel = cls ? getClassLabel(classId) : '—';
 
   return (
     <PageContainer
       title="Class Record"
       icon={ClipboardList}
-      description={`Enter, edit, and save student grades for ${cls ? `${cls.gradeLevel} – ${cls.section}` : 'your assigned classes'}.`}
+      description="Enter written works, performance tasks, and examination scores. The system computes the initial grade, applies the SY 2026–2027 transmutation table, and saves the transmuted grade to each student's SF10."
     >
-      <Card className="mb-5">
+      <Card className="mb-5 no-print">
         <CardBody className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Select label="Class" value={classId} onChange={(e) => setClassId(e.target.value)} options={classOptions} />
           <Select label="Subject" value={subjectId} onChange={(e) => setSubjectId(e.target.value)} options={subjectOptions} />
           <Input label="School Year" value={schoolYear} disabled readOnly />
           <Select
-            label="Term"
+            label="Grading period"
             value={gradingPeriod}
             onChange={(e) => setGradingPeriod(e.target.value)}
             options={periods.map((p) => ({ value: p.id, label: p.label }))}
@@ -202,30 +306,32 @@ export default function TeacherClassRecord() {
 
       {rows.length > 0 ? (
         <>
-          <div className="mb-5">
+          <div className="mb-5 no-print">
             <GradeSummary rows={rows} activePeriod={gradingPeriod} periods={periods} />
           </div>
 
-          <Card>
-            <CardBody className="p-5">
-              <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <Card className="cr-sheet-card">
+            <CardBody className="p-4 sm:p-5">
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-3 no-print">
                 <div className="w-full max-w-xs">
                   <Input icon={Search} placeholder="Search by name or LRN" value={query} onChange={(e) => setQuery(e.target.value)} />
                 </div>
                 <Button icon={Save} onClick={handleSaveAll} disabled={dirtyIds.size === 0}>
-                  Save All ({dirtyIds.size})
+                  Save all term grades ({dirtyIds.size})
                 </Button>
               </div>
-              <ClassRecordTable
+              <DepEdClassRecordSheet
+                subjectName={subjectName}
+                classLabel={classLabel}
+                schoolYear={schoolYear}
+                periodLabel={periodLabel}
+                gradeComponents={gradeComponents}
                 rows={filteredRows}
-                activePeriod={gradingPeriod}
-                periods={periods}
-                values={values}
-                invalidIds={invalidIds}
+                scoresByStudent={scoresByStudent}
+                invalidCells={invalidCells}
                 dirtyIds={dirtyIds}
-                onChange={handleChange}
+                onScoreChange={handleScoreChange}
                 onSaveRow={handleSaveRow}
-                finalLabel={curriculum.finalLabel}
               />
             </CardBody>
           </Card>
@@ -244,9 +350,9 @@ export default function TeacherClassRecord() {
         onClose={() => setConfirmOpen(false)}
         onConfirm={confirmSaveAll}
         loading={saving}
-        title="Save all grades?"
-        message={`You are about to save ${dirtyIds.size} grade${dirtyIds.size === 1 ? '' : 's'} for ${periodLabel}. This will immediately update each student's academic record and SF10.`}
-        confirmLabel="Save All"
+        title="Save all term grades?"
+        message={`You are about to save ${dirtyIds.size} transmuted term grade${dirtyIds.size === 1 ? '' : 's'} for ${periodLabel} (SY 2026–2027 table). Each student's class record and SF10 will be updated right away.`}
+        confirmLabel="Save all"
       />
     </PageContainer>
   );

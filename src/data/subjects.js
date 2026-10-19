@@ -12,6 +12,8 @@ export const SUBJECTS = [
   { id: 'MAPEH', name: 'MAPEH' },
   { id: 'MUSIC_ARTS', name: 'Music and Arts' },
   { id: 'PE_HEALTH', name: 'Physical Education and Health' },
+  { id: 'CREATIVE_TECH', name: 'Creative Tech' },
+  { id: 'RESEARCH', name: 'Research' },
 ];
 
 export function getSubjectById(id) {
