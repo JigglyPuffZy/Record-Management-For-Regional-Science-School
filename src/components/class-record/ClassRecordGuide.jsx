@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ChevronDown, Sparkles } from 'lucide-react';
+import { ChevronDown } from 'lucide-react';
 import { TRANSMUTATION_SCHOOL_YEAR } from '../../lib/transmutation.js';
 import { formatComponentWeights } from '../../lib/gradeComponents.js';
 import { cn } from '../../lib/utils.js';
@@ -18,9 +18,6 @@ export default function ClassRecordGuide({ gradeComponents }) {
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
       >
-        <span className="cr-guide-toggle-icon" aria-hidden="true">
-          <Sparkles className="h-4 w-4" />
-        </span>
         <span className="flex-1 text-left">
           <span className="cr-guide-toggle-title">Grading guide</span>
           <span className="cr-guide-toggle-sub">SY 2026–2027 transmutation · {weightsText}</span>
