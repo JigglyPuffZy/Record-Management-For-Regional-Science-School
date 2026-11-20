@@ -27,7 +27,7 @@ lines.push(`-- =================================================================
 -- SF10 & Class Record Management System
 -- Complete Supabase schema + seed data (single file)
 --
--- Project: Bagong Pag-asa National High School
+-- Project: Regional Science High School for Region II
 -- Active SY: ${ACTIVE_SCHOOL_YEAR}
 --
 -- HOW TO USE:

@@ -1,6 +1,6 @@
 # Record-Management-For-Regional-Science-School
 
-SF10 & Class Record Management System for a Philippine regional science high school.
+SF10 & Class Record Management System for Regional Science High School for Region II.
 
 A React + Vite frontend for managing student SF10 (Learner's Permanent Academic
 Record) and Class Records for a Philippine high school, with separate

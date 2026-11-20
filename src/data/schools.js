@@ -3,7 +3,7 @@
 // plain object here so it is trivial to swap out later.
 
 export const SCHOOL = {
-  name: 'Bagong Pag-asa National High School',
+  name: 'Regional Science High School for Region II',
   schoolId: '301234',
   district: 'Quezon City District IV',
   address: 'Brgy. San Isidro, Quezon City, Metro Manila',

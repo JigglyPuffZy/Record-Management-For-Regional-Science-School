@@ -2,7 +2,7 @@
 -- SF10 & Class Record Management System
 -- Complete Supabase schema + seed data (single file)
 --
--- Project: Bagong Pag-asa National High School
+-- Project: Regional Science High School for Region II
 -- Active SY: 2026-2027
 --
 -- HOW TO USE:
@@ -415,7 +415,7 @@ GROUP BY gr.student_id, gr.school_year_id;
 -- -----------------------------------------------------------------------------
 
 INSERT INTO schools (school_id, name, district, address, division, region)
-VALUES ('301234', 'Bagong Pag-asa National High School', 'Quezon City District IV', 'Brgy. San Isidro, Quezon City, Metro Manila', 'Schools Division Office – Quezon City', 'National Capital Region (NCR)');
+VALUES ('301234', 'Regional Science High School for Region II', 'Quezon City District IV', 'Brgy. San Isidro, Quezon City, Metro Manila', 'Schools Division Office – Quezon City', 'National Capital Region (NCR)');
 
 
 INSERT INTO school_years (id, label, is_active, sort_order) VALUES
@@ -999,7 +999,7 @@ VALUES ('2026-007', 'G10-RIZAL', 'PE_HEALTH', '2026-2027', 'Grade 10'::grade_lev
 DO $$ DECLARE ayr_2026_001_2023_2024 uuid;
 BEGIN
   INSERT INTO academic_year_records (student_id, school_year_id, grade_level, section, adviser_name, school_name, school_dep_id, district, division, region, is_locked)
-  VALUES ('2026-001', '2023-2024', 'Grade 7'::grade_level_type, 'Rizal', 'Edgar Cruz', 'Bagong Pag-asa National High School', '301234', 'Quezon City District IV', 'Schools Division Office – Quezon City', 'National Capital Region (NCR)', true)
+  VALUES ('2026-001', '2023-2024', 'Grade 7'::grade_level_type, 'Rizal', 'Edgar Cruz', 'Regional Science High School for Region II', '301234', 'Quezon City District IV', 'Schools Division Office – Quezon City', 'National Capital Region (NCR)', true)
   RETURNING id INTO ayr_2026_001_2023_2024;
   INSERT INTO academic_year_subject_grades (academic_year_record_id, subject_id, subject_name, quarter1, quarter2, quarter3, quarter4, final_grade)
   VALUES (ayr_2026_001_2023_2024, 'FIL', 'Filipino', 90, 91, 92, 93, 92);
@@ -1026,7 +1026,7 @@ END $$;
 DO $$ DECLARE ayr_2026_001_2024_2025 uuid;
 BEGIN
   INSERT INTO academic_year_records (student_id, school_year_id, grade_level, section, adviser_name, school_name, school_dep_id, district, division, region, is_locked)
-  VALUES ('2026-001', '2024-2025', 'Grade 8'::grade_level_type, 'Bonifacio', 'Liza Fernandez', 'Bagong Pag-asa National High School', '301234', 'Quezon City District IV', 'Schools Division Office – Quezon City', 'National Capital Region (NCR)', true)
+  VALUES ('2026-001', '2024-2025', 'Grade 8'::grade_level_type, 'Bonifacio', 'Liza Fernandez', 'Regional Science High School for Region II', '301234', 'Quezon City District IV', 'Schools Division Office – Quezon City', 'National Capital Region (NCR)', true)
   RETURNING id INTO ayr_2026_001_2024_2025;
   INSERT INTO academic_year_subject_grades (academic_year_record_id, subject_id, subject_name, quarter1, quarter2, quarter3, quarter4, final_grade)
   VALUES (ayr_2026_001_2024_2025, 'FIL', 'Filipino', 90, 91, 92, 93, 92);
@@ -1055,7 +1055,7 @@ END $$;
 DO $$ DECLARE ayr_2026_001_2025_2026 uuid;
 BEGIN
   INSERT INTO academic_year_records (student_id, school_year_id, grade_level, section, adviser_name, school_name, school_dep_id, district, division, region, is_locked)
-  VALUES ('2026-001', '2025-2026', 'Grade 9'::grade_level_type, 'Mabini', 'Ramon Santos', 'Bagong Pag-asa National High School', '301234', 'Quezon City District IV', 'Schools Division Office – Quezon City', 'National Capital Region (NCR)', true)
+  VALUES ('2026-001', '2025-2026', 'Grade 9'::grade_level_type, 'Mabini', 'Ramon Santos', 'Regional Science High School for Region II', '301234', 'Quezon City District IV', 'Schools Division Office – Quezon City', 'National Capital Region (NCR)', true)
   RETURNING id INTO ayr_2026_001_2025_2026;
   INSERT INTO academic_year_subject_grades (academic_year_record_id, subject_id, subject_name, quarter1, quarter2, quarter3, quarter4, final_grade)
   VALUES (ayr_2026_001_2025_2026, 'FIL', 'Filipino', 90, 91, 92, 93, 92);
@@ -1082,7 +1082,7 @@ END $$;
 DO $$ DECLARE ayr_2026_002_2023_2024 uuid;
 BEGIN
   INSERT INTO academic_year_records (student_id, school_year_id, grade_level, section, adviser_name, school_name, school_dep_id, district, division, region, is_locked)
-  VALUES ('2026-002', '2023-2024', 'Grade 7'::grade_level_type, 'Rizal', 'Edgar Cruz', 'Bagong Pag-asa National High School', '301234', 'Quezon City District IV', 'Schools Division Office – Quezon City', 'National Capital Region (NCR)', true)
+  VALUES ('2026-002', '2023-2024', 'Grade 7'::grade_level_type, 'Rizal', 'Edgar Cruz', 'Regional Science High School for Region II', '301234', 'Quezon City District IV', 'Schools Division Office – Quezon City', 'National Capital Region (NCR)', true)
   RETURNING id INTO ayr_2026_002_2023_2024;
   INSERT INTO academic_year_subject_grades (academic_year_record_id, subject_id, subject_name, quarter1, quarter2, quarter3, quarter4, final_grade)
   VALUES (ayr_2026_002_2023_2024, 'FIL', 'Filipino', 89, 90, 91, 92, 91);
@@ -1109,7 +1109,7 @@ END $$;
 DO $$ DECLARE ayr_2026_002_2024_2025 uuid;
 BEGIN
   INSERT INTO academic_year_records (student_id, school_year_id, grade_level, section, adviser_name, school_name, school_dep_id, district, division, region, is_locked)
-  VALUES ('2026-002', '2024-2025', 'Grade 8'::grade_level_type, 'Bonifacio', 'Liza Fernandez', 'Bagong Pag-asa National High School', '301234', 'Quezon City District IV', 'Schools Division Office – Quezon City', 'National Capital Region (NCR)', true)
+  VALUES ('2026-002', '2024-2025', 'Grade 8'::grade_level_type, 'Bonifacio', 'Liza Fernandez', 'Regional Science High School for Region II', '301234', 'Quezon City District IV', 'Schools Division Office – Quezon City', 'National Capital Region (NCR)', true)
   RETURNING id INTO ayr_2026_002_2024_2025;
   INSERT INTO academic_year_subject_grades (academic_year_record_id, subject_id, subject_name, quarter1, quarter2, quarter3, quarter4, final_grade)
   VALUES (ayr_2026_002_2024_2025, 'FIL', 'Filipino', 89, 90, 91, 92, 91);
@@ -1136,7 +1136,7 @@ END $$;
 DO $$ DECLARE ayr_2026_002_2025_2026 uuid;
 BEGIN
   INSERT INTO academic_year_records (student_id, school_year_id, grade_level, section, adviser_name, school_name, school_dep_id, district, division, region, is_locked)
-  VALUES ('2026-002', '2025-2026', 'Grade 9'::grade_level_type, 'Mabini', 'Ramon Santos', 'Bagong Pag-asa National High School', '301234', 'Quezon City District IV', 'Schools Division Office – Quezon City', 'National Capital Region (NCR)', true)
+  VALUES ('2026-002', '2025-2026', 'Grade 9'::grade_level_type, 'Mabini', 'Ramon Santos', 'Regional Science High School for Region II', '301234', 'Quezon City District IV', 'Schools Division Office – Quezon City', 'National Capital Region (NCR)', true)
   RETURNING id INTO ayr_2026_002_2025_2026;
   INSERT INTO academic_year_subject_grades (academic_year_record_id, subject_id, subject_name, quarter1, quarter2, quarter3, quarter4, final_grade)
   VALUES (ayr_2026_002_2025_2026, 'FIL', 'Filipino', 89, 90, 91, 92, 91);
@@ -1163,7 +1163,7 @@ END $$;
 DO $$ DECLARE ayr_2026_003_2023_2024 uuid;
 BEGIN
   INSERT INTO academic_year_records (student_id, school_year_id, grade_level, section, adviser_name, school_name, school_dep_id, district, division, region, is_locked)
-  VALUES ('2026-003', '2023-2024', 'Grade 7'::grade_level_type, 'Rizal', 'Edgar Cruz', 'Bagong Pag-asa National High School', '301234', 'Quezon City District IV', 'Schools Division Office – Quezon City', 'National Capital Region (NCR)', true)
+  VALUES ('2026-003', '2023-2024', 'Grade 7'::grade_level_type, 'Rizal', 'Edgar Cruz', 'Regional Science High School for Region II', '301234', 'Quezon City District IV', 'Schools Division Office – Quezon City', 'National Capital Region (NCR)', true)
   RETURNING id INTO ayr_2026_003_2023_2024;
   INSERT INTO academic_year_subject_grades (academic_year_record_id, subject_id, subject_name, quarter1, quarter2, quarter3, quarter4, final_grade)
   VALUES (ayr_2026_003_2023_2024, 'FIL', 'Filipino', 88, 89, 90, 91, 90);
@@ -1190,7 +1190,7 @@ END $$;
 DO $$ DECLARE ayr_2026_003_2024_2025 uuid;
 BEGIN
   INSERT INTO academic_year_records (student_id, school_year_id, grade_level, section, adviser_name, school_name, school_dep_id, district, division, region, is_locked)
-  VALUES ('2026-003', '2024-2025', 'Grade 8'::grade_level_type, 'Bonifacio', 'Liza Fernandez', 'Bagong Pag-asa National High School', '301234', 'Quezon City District IV', 'Schools Division Office – Quezon City', 'National Capital Region (NCR)', true)
+  VALUES ('2026-003', '2024-2025', 'Grade 8'::grade_level_type, 'Bonifacio', 'Liza Fernandez', 'Regional Science High School for Region II', '301234', 'Quezon City District IV', 'Schools Division Office – Quezon City', 'National Capital Region (NCR)', true)
   RETURNING id INTO ayr_2026_003_2024_2025;
   INSERT INTO academic_year_subject_grades (academic_year_record_id, subject_id, subject_name, quarter1, quarter2, quarter3, quarter4, final_grade)
   VALUES (ayr_2026_003_2024_2025, 'FIL', 'Filipino', 88, 89, 90, 91, 90);
@@ -1217,7 +1217,7 @@ END $$;
 DO $$ DECLARE ayr_2026_003_2025_2026 uuid;
 BEGIN
   INSERT INTO academic_year_records (student_id, school_year_id, grade_level, section, adviser_name, school_name, school_dep_id, district, division, region, is_locked)
-  VALUES ('2026-003', '2025-2026', 'Grade 9'::grade_level_type, 'Mabini', 'Ramon Santos', 'Bagong Pag-asa National High School', '301234', 'Quezon City District IV', 'Schools Division Office – Quezon City', 'National Capital Region (NCR)', true)
+  VALUES ('2026-003', '2025-2026', 'Grade 9'::grade_level_type, 'Mabini', 'Ramon Santos', 'Regional Science High School for Region II', '301234', 'Quezon City District IV', 'Schools Division Office – Quezon City', 'National Capital Region (NCR)', true)
   RETURNING id INTO ayr_2026_003_2025_2026;
   INSERT INTO academic_year_subject_grades (academic_year_record_id, subject_id, subject_name, quarter1, quarter2, quarter3, quarter4, final_grade)
   VALUES (ayr_2026_003_2025_2026, 'FIL', 'Filipino', 88, 89, 90, 91, 90);
@@ -1244,7 +1244,7 @@ END $$;
 DO $$ DECLARE ayr_2026_004_2023_2024 uuid;
 BEGIN
   INSERT INTO academic_year_records (student_id, school_year_id, grade_level, section, adviser_name, school_name, school_dep_id, district, division, region, is_locked)
-  VALUES ('2026-004', '2023-2024', 'Grade 7'::grade_level_type, 'Rizal', 'Edgar Cruz', 'Bagong Pag-asa National High School', '301234', 'Quezon City District IV', 'Schools Division Office – Quezon City', 'National Capital Region (NCR)', true)
+  VALUES ('2026-004', '2023-2024', 'Grade 7'::grade_level_type, 'Rizal', 'Edgar Cruz', 'Regional Science High School for Region II', '301234', 'Quezon City District IV', 'Schools Division Office – Quezon City', 'National Capital Region (NCR)', true)
   RETURNING id INTO ayr_2026_004_2023_2024;
   INSERT INTO academic_year_subject_grades (academic_year_record_id, subject_id, subject_name, quarter1, quarter2, quarter3, quarter4, final_grade)
   VALUES (ayr_2026_004_2023_2024, 'FIL', 'Filipino', 87, 88, 89, 90, 89);
@@ -1271,7 +1271,7 @@ END $$;
 DO $$ DECLARE ayr_2026_004_2024_2025 uuid;
 BEGIN
   INSERT INTO academic_year_records (student_id, school_year_id, grade_level, section, adviser_name, school_name, school_dep_id, district, division, region, is_locked)
-  VALUES ('2026-004', '2024-2025', 'Grade 8'::grade_level_type, 'Bonifacio', 'Liza Fernandez', 'Bagong Pag-asa National High School', '301234', 'Quezon City District IV', 'Schools Division Office – Quezon City', 'National Capital Region (NCR)', true)
+  VALUES ('2026-004', '2024-2025', 'Grade 8'::grade_level_type, 'Bonifacio', 'Liza Fernandez', 'Regional Science High School for Region II', '301234', 'Quezon City District IV', 'Schools Division Office – Quezon City', 'National Capital Region (NCR)', true)
   RETURNING id INTO ayr_2026_004_2024_2025;
   INSERT INTO academic_year_subject_grades (academic_year_record_id, subject_id, subject_name, quarter1, quarter2, quarter3, quarter4, final_grade)
   VALUES (ayr_2026_004_2024_2025, 'FIL', 'Filipino', 87, 88, 89, 90, 89);
@@ -1298,7 +1298,7 @@ END $$;
 DO $$ DECLARE ayr_2026_004_2025_2026 uuid;
 BEGIN
   INSERT INTO academic_year_records (student_id, school_year_id, grade_level, section, adviser_name, school_name, school_dep_id, district, division, region, is_locked)
-  VALUES ('2026-004', '2025-2026', 'Grade 9'::grade_level_type, 'Mabini', 'Ramon Santos', 'Bagong Pag-asa National High School', '301234', 'Quezon City District IV', 'Schools Division Office – Quezon City', 'National Capital Region (NCR)', true)
+  VALUES ('2026-004', '2025-2026', 'Grade 9'::grade_level_type, 'Mabini', 'Ramon Santos', 'Regional Science High School for Region II', '301234', 'Quezon City District IV', 'Schools Division Office – Quezon City', 'National Capital Region (NCR)', true)
   RETURNING id INTO ayr_2026_004_2025_2026;
   INSERT INTO academic_year_subject_grades (academic_year_record_id, subject_id, subject_name, quarter1, quarter2, quarter3, quarter4, final_grade)
   VALUES (ayr_2026_004_2025_2026, 'FIL', 'Filipino', 87, 88, 89, 90, 89);
@@ -1325,7 +1325,7 @@ END $$;
 DO $$ DECLARE ayr_2026_005_2023_2024 uuid;
 BEGIN
   INSERT INTO academic_year_records (student_id, school_year_id, grade_level, section, adviser_name, school_name, school_dep_id, district, division, region, is_locked)
-  VALUES ('2026-005', '2023-2024', 'Grade 7'::grade_level_type, 'Rizal', 'Edgar Cruz', 'Bagong Pag-asa National High School', '301234', 'Quezon City District IV', 'Schools Division Office – Quezon City', 'National Capital Region (NCR)', true)
+  VALUES ('2026-005', '2023-2024', 'Grade 7'::grade_level_type, 'Rizal', 'Edgar Cruz', 'Regional Science High School for Region II', '301234', 'Quezon City District IV', 'Schools Division Office – Quezon City', 'National Capital Region (NCR)', true)
   RETURNING id INTO ayr_2026_005_2023_2024;
   INSERT INTO academic_year_subject_grades (academic_year_record_id, subject_id, subject_name, quarter1, quarter2, quarter3, quarter4, final_grade)
   VALUES (ayr_2026_005_2023_2024, 'FIL', 'Filipino', 86, 87, 88, 89, 88);
@@ -1352,7 +1352,7 @@ END $$;
 DO $$ DECLARE ayr_2026_005_2024_2025 uuid;
 BEGIN
   INSERT INTO academic_year_records (student_id, school_year_id, grade_level, section, adviser_name, school_name, school_dep_id, district, division, region, is_locked)
-  VALUES ('2026-005', '2024-2025', 'Grade 8'::grade_level_type, 'Bonifacio', 'Liza Fernandez', 'Bagong Pag-asa National High School', '301234', 'Quezon City District IV', 'Schools Division Office – Quezon City', 'National Capital Region (NCR)', true)
+  VALUES ('2026-005', '2024-2025', 'Grade 8'::grade_level_type, 'Bonifacio', 'Liza Fernandez', 'Regional Science High School for Region II', '301234', 'Quezon City District IV', 'Schools Division Office – Quezon City', 'National Capital Region (NCR)', true)
   RETURNING id INTO ayr_2026_005_2024_2025;
   INSERT INTO academic_year_subject_grades (academic_year_record_id, subject_id, subject_name, quarter1, quarter2, quarter3, quarter4, final_grade)
   VALUES (ayr_2026_005_2024_2025, 'FIL', 'Filipino', 86, 87, 88, 89, 88);
@@ -1379,7 +1379,7 @@ END $$;
 DO $$ DECLARE ayr_2026_005_2025_2026 uuid;
 BEGIN
   INSERT INTO academic_year_records (student_id, school_year_id, grade_level, section, adviser_name, school_name, school_dep_id, district, division, region, is_locked)
-  VALUES ('2026-005', '2025-2026', 'Grade 9'::grade_level_type, 'Mabini', 'Ramon Santos', 'Bagong Pag-asa National High School', '301234', 'Quezon City District IV', 'Schools Division Office – Quezon City', 'National Capital Region (NCR)', true)
+  VALUES ('2026-005', '2025-2026', 'Grade 9'::grade_level_type, 'Mabini', 'Ramon Santos', 'Regional Science High School for Region II', '301234', 'Quezon City District IV', 'Schools Division Office – Quezon City', 'National Capital Region (NCR)', true)
   RETURNING id INTO ayr_2026_005_2025_2026;
   INSERT INTO academic_year_subject_grades (academic_year_record_id, subject_id, subject_name, quarter1, quarter2, quarter3, quarter4, final_grade)
   VALUES (ayr_2026_005_2025_2026, 'FIL', 'Filipino', 86, 87, 88, 89, 88);
@@ -1406,7 +1406,7 @@ END $$;
 DO $$ DECLARE ayr_2026_006_2023_2024 uuid;
 BEGIN
   INSERT INTO academic_year_records (student_id, school_year_id, grade_level, section, adviser_name, school_name, school_dep_id, district, division, region, is_locked)
-  VALUES ('2026-006', '2023-2024', 'Grade 7'::grade_level_type, 'Rizal', 'Edgar Cruz', 'Bagong Pag-asa National High School', '301234', 'Quezon City District IV', 'Schools Division Office – Quezon City', 'National Capital Region (NCR)', true)
+  VALUES ('2026-006', '2023-2024', 'Grade 7'::grade_level_type, 'Rizal', 'Edgar Cruz', 'Regional Science High School for Region II', '301234', 'Quezon City District IV', 'Schools Division Office – Quezon City', 'National Capital Region (NCR)', true)
   RETURNING id INTO ayr_2026_006_2023_2024;
   INSERT INTO academic_year_subject_grades (academic_year_record_id, subject_id, subject_name, quarter1, quarter2, quarter3, quarter4, final_grade)
   VALUES (ayr_2026_006_2023_2024, 'FIL', 'Filipino', 85, 86, 87, 88, 87);
@@ -1433,7 +1433,7 @@ END $$;
 DO $$ DECLARE ayr_2026_006_2024_2025 uuid;
 BEGIN
   INSERT INTO academic_year_records (student_id, school_year_id, grade_level, section, adviser_name, school_name, school_dep_id, district, division, region, is_locked)
-  VALUES ('2026-006', '2024-2025', 'Grade 8'::grade_level_type, 'Bonifacio', 'Liza Fernandez', 'Bagong Pag-asa National High School', '301234', 'Quezon City District IV', 'Schools Division Office – Quezon City', 'National Capital Region (NCR)', true)
+  VALUES ('2026-006', '2024-2025', 'Grade 8'::grade_level_type, 'Bonifacio', 'Liza Fernandez', 'Regional Science High School for Region II', '301234', 'Quezon City District IV', 'Schools Division Office – Quezon City', 'National Capital Region (NCR)', true)
   RETURNING id INTO ayr_2026_006_2024_2025;
   INSERT INTO academic_year_subject_grades (academic_year_record_id, subject_id, subject_name, quarter1, quarter2, quarter3, quarter4, final_grade)
   VALUES (ayr_2026_006_2024_2025, 'FIL', 'Filipino', 85, 86, 87, 88, 87);
@@ -1460,7 +1460,7 @@ END $$;
 DO $$ DECLARE ayr_2026_006_2025_2026 uuid;
 BEGIN
   INSERT INTO academic_year_records (student_id, school_year_id, grade_level, section, adviser_name, school_name, school_dep_id, district, division, region, is_locked)
-  VALUES ('2026-006', '2025-2026', 'Grade 9'::grade_level_type, 'Mabini', 'Ramon Santos', 'Bagong Pag-asa National High School', '301234', 'Quezon City District IV', 'Schools Division Office – Quezon City', 'National Capital Region (NCR)', true)
+  VALUES ('2026-006', '2025-2026', 'Grade 9'::grade_level_type, 'Mabini', 'Ramon Santos', 'Regional Science High School for Region II', '301234', 'Quezon City District IV', 'Schools Division Office – Quezon City', 'National Capital Region (NCR)', true)
   RETURNING id INTO ayr_2026_006_2025_2026;
   INSERT INTO academic_year_subject_grades (academic_year_record_id, subject_id, subject_name, quarter1, quarter2, quarter3, quarter4, final_grade)
   VALUES (ayr_2026_006_2025_2026, 'FIL', 'Filipino', 85, 86, 87, 88, 87);
@@ -1487,7 +1487,7 @@ END $$;
 DO $$ DECLARE ayr_2026_007_2023_2024 uuid;
 BEGIN
   INSERT INTO academic_year_records (student_id, school_year_id, grade_level, section, adviser_name, school_name, school_dep_id, district, division, region, is_locked)
-  VALUES ('2026-007', '2023-2024', 'Grade 7'::grade_level_type, 'Rizal', 'Edgar Cruz', 'Bagong Pag-asa National High School', '301234', 'Quezon City District IV', 'Schools Division Office – Quezon City', 'National Capital Region (NCR)', true)
+  VALUES ('2026-007', '2023-2024', 'Grade 7'::grade_level_type, 'Rizal', 'Edgar Cruz', 'Regional Science High School for Region II', '301234', 'Quezon City District IV', 'Schools Division Office – Quezon City', 'National Capital Region (NCR)', true)
   RETURNING id INTO ayr_2026_007_2023_2024;
   INSERT INTO academic_year_subject_grades (academic_year_record_id, subject_id, subject_name, quarter1, quarter2, quarter3, quarter4, final_grade)
   VALUES (ayr_2026_007_2023_2024, 'FIL', 'Filipino', 84, 85, 86, 87, 86);
@@ -1514,7 +1514,7 @@ END $$;
 DO $$ DECLARE ayr_2026_007_2024_2025 uuid;
 BEGIN
   INSERT INTO academic_year_records (student_id, school_year_id, grade_level, section, adviser_name, school_name, school_dep_id, district, division, region, is_locked)
-  VALUES ('2026-007', '2024-2025', 'Grade 8'::grade_level_type, 'Bonifacio', 'Liza Fernandez', 'Bagong Pag-asa National High School', '301234', 'Quezon City District IV', 'Schools Division Office – Quezon City', 'National Capital Region (NCR)', true)
+  VALUES ('2026-007', '2024-2025', 'Grade 8'::grade_level_type, 'Bonifacio', 'Liza Fernandez', 'Regional Science High School for Region II', '301234', 'Quezon City District IV', 'Schools Division Office – Quezon City', 'National Capital Region (NCR)', true)
   RETURNING id INTO ayr_2026_007_2024_2025;
   INSERT INTO academic_year_subject_grades (academic_year_record_id, subject_id, subject_name, quarter1, quarter2, quarter3, quarter4, final_grade)
   VALUES (ayr_2026_007_2024_2025, 'FIL', 'Filipino', 84, 85, 86, 87, 86);
@@ -1541,7 +1541,7 @@ END $$;
 DO $$ DECLARE ayr_2026_007_2025_2026 uuid;
 BEGIN
   INSERT INTO academic_year_records (student_id, school_year_id, grade_level, section, adviser_name, school_name, school_dep_id, district, division, region, is_locked)
-  VALUES ('2026-007', '2025-2026', 'Grade 9'::grade_level_type, 'Mabini', 'Ramon Santos', 'Bagong Pag-asa National High School', '301234', 'Quezon City District IV', 'Schools Division Office – Quezon City', 'National Capital Region (NCR)', true)
+  VALUES ('2026-007', '2025-2026', 'Grade 9'::grade_level_type, 'Mabini', 'Ramon Santos', 'Regional Science High School for Region II', '301234', 'Quezon City District IV', 'Schools Division Office – Quezon City', 'National Capital Region (NCR)', true)
   RETURNING id INTO ayr_2026_007_2025_2026;
   INSERT INTO academic_year_subject_grades (academic_year_record_id, subject_id, subject_name, quarter1, quarter2, quarter3, quarter4, final_grade)
   VALUES (ayr_2026_007_2025_2026, 'FIL', 'Filipino', 84, 85, 86, 87, 86);
@@ -1568,7 +1568,7 @@ END $$;
 DO $$ DECLARE ayr_2026_008_2023_2024 uuid;
 BEGIN
   INSERT INTO academic_year_records (student_id, school_year_id, grade_level, section, adviser_name, school_name, school_dep_id, district, division, region, is_locked)
-  VALUES ('2026-008', '2023-2024', 'Grade 7'::grade_level_type, 'Rizal', 'Edgar Cruz', 'Bagong Pag-asa National High School', '301234', 'Quezon City District IV', 'Schools Division Office – Quezon City', 'National Capital Region (NCR)', true)
+  VALUES ('2026-008', '2023-2024', 'Grade 7'::grade_level_type, 'Rizal', 'Edgar Cruz', 'Regional Science High School for Region II', '301234', 'Quezon City District IV', 'Schools Division Office – Quezon City', 'National Capital Region (NCR)', true)
   RETURNING id INTO ayr_2026_008_2023_2024;
   INSERT INTO academic_year_subject_grades (academic_year_record_id, subject_id, subject_name, quarter1, quarter2, quarter3, quarter4, final_grade)
   VALUES (ayr_2026_008_2023_2024, 'FIL', 'Filipino', 83, 84, 85, 86, 85);
@@ -1595,7 +1595,7 @@ END $$;
 DO $$ DECLARE ayr_2026_009_2023_2024 uuid;
 BEGIN
   INSERT INTO academic_year_records (student_id, school_year_id, grade_level, section, adviser_name, school_name, school_dep_id, district, division, region, is_locked)
-  VALUES ('2026-009', '2023-2024', 'Grade 7'::grade_level_type, 'Rizal', 'Edgar Cruz', 'Bagong Pag-asa National High School', '301234', 'Quezon City District IV', 'Schools Division Office – Quezon City', 'National Capital Region (NCR)', true)
+  VALUES ('2026-009', '2023-2024', 'Grade 7'::grade_level_type, 'Rizal', 'Edgar Cruz', 'Regional Science High School for Region II', '301234', 'Quezon City District IV', 'Schools Division Office – Quezon City', 'National Capital Region (NCR)', true)
   RETURNING id INTO ayr_2026_009_2023_2024;
   INSERT INTO academic_year_subject_grades (academic_year_record_id, subject_id, subject_name, quarter1, quarter2, quarter3, quarter4, final_grade)
   VALUES (ayr_2026_009_2023_2024, 'FIL', 'Filipino', 82, 83, 84, 85, 84);
@@ -1622,7 +1622,7 @@ END $$;
 DO $$ DECLARE ayr_2026_010_2023_2024 uuid;
 BEGIN
   INSERT INTO academic_year_records (student_id, school_year_id, grade_level, section, adviser_name, school_name, school_dep_id, district, division, region, is_locked)
-  VALUES ('2026-010', '2023-2024', 'Grade 7'::grade_level_type, 'Rizal', 'Edgar Cruz', 'Bagong Pag-asa National High School', '301234', 'Quezon City District IV', 'Schools Division Office – Quezon City', 'National Capital Region (NCR)', true)
+  VALUES ('2026-010', '2023-2024', 'Grade 7'::grade_level_type, 'Rizal', 'Edgar Cruz', 'Regional Science High School for Region II', '301234', 'Quezon City District IV', 'Schools Division Office – Quezon City', 'National Capital Region (NCR)', true)
   RETURNING id INTO ayr_2026_010_2023_2024;
   INSERT INTO academic_year_subject_grades (academic_year_record_id, subject_id, subject_name, quarter1, quarter2, quarter3, quarter4, final_grade)
   VALUES (ayr_2026_010_2023_2024, 'FIL', 'Filipino', 92, 93, 94, 95, 94);
@@ -1649,7 +1649,7 @@ END $$;
 DO $$ DECLARE ayr_2026_011_2023_2024 uuid;
 BEGIN
   INSERT INTO academic_year_records (student_id, school_year_id, grade_level, section, adviser_name, school_name, school_dep_id, district, division, region, is_locked)
-  VALUES ('2026-011', '2023-2024', 'Grade 7'::grade_level_type, 'Rizal', 'Edgar Cruz', 'Bagong Pag-asa National High School', '301234', 'Quezon City District IV', 'Schools Division Office – Quezon City', 'National Capital Region (NCR)', true)
+  VALUES ('2026-011', '2023-2024', 'Grade 7'::grade_level_type, 'Rizal', 'Edgar Cruz', 'Regional Science High School for Region II', '301234', 'Quezon City District IV', 'Schools Division Office – Quezon City', 'National Capital Region (NCR)', true)
   RETURNING id INTO ayr_2026_011_2023_2024;
   INSERT INTO academic_year_subject_grades (academic_year_record_id, subject_id, subject_name, quarter1, quarter2, quarter3, quarter4, final_grade)
   VALUES (ayr_2026_011_2023_2024, 'FIL', 'Filipino', 91, 92, 93, 94, 93);
@@ -1676,7 +1676,7 @@ END $$;
 DO $$ DECLARE ayr_2026_012_2023_2024 uuid;
 BEGIN
   INSERT INTO academic_year_records (student_id, school_year_id, grade_level, section, adviser_name, school_name, school_dep_id, district, division, region, is_locked)
-  VALUES ('2026-012', '2023-2024', 'Grade 7'::grade_level_type, 'Rizal', 'Edgar Cruz', 'Bagong Pag-asa National High School', '301234', 'Quezon City District IV', 'Schools Division Office – Quezon City', 'National Capital Region (NCR)', true)
+  VALUES ('2026-012', '2023-2024', 'Grade 7'::grade_level_type, 'Rizal', 'Edgar Cruz', 'Regional Science High School for Region II', '301234', 'Quezon City District IV', 'Schools Division Office – Quezon City', 'National Capital Region (NCR)', true)
   RETURNING id INTO ayr_2026_012_2023_2024;
   INSERT INTO academic_year_subject_grades (academic_year_record_id, subject_id, subject_name, quarter1, quarter2, quarter3, quarter4, final_grade)
   VALUES (ayr_2026_012_2023_2024, 'FIL', 'Filipino', 90, 91, 92, 93, 92);
@@ -1703,7 +1703,7 @@ END $$;
 DO $$ DECLARE ayr_2026_013_2023_2024 uuid;
 BEGIN
   INSERT INTO academic_year_records (student_id, school_year_id, grade_level, section, adviser_name, school_name, school_dep_id, district, division, region, is_locked)
-  VALUES ('2026-013', '2023-2024', 'Grade 7'::grade_level_type, 'Rizal', 'Edgar Cruz', 'Bagong Pag-asa National High School', '301234', 'Quezon City District IV', 'Schools Division Office – Quezon City', 'National Capital Region (NCR)', true)
+  VALUES ('2026-013', '2023-2024', 'Grade 7'::grade_level_type, 'Rizal', 'Edgar Cruz', 'Regional Science High School for Region II', '301234', 'Quezon City District IV', 'Schools Division Office – Quezon City', 'National Capital Region (NCR)', true)
   RETURNING id INTO ayr_2026_013_2023_2024;
   INSERT INTO academic_year_subject_grades (academic_year_record_id, subject_id, subject_name, quarter1, quarter2, quarter3, quarter4, final_grade)
   VALUES (ayr_2026_013_2023_2024, 'FIL', 'Filipino', 89, 90, 91, 92, 91);

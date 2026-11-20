@@ -11,6 +11,7 @@ import AppLogo from '../../components/ui/AppLogo.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useToast } from '../../context/ToastContext.jsx';
 import { cn } from '../../lib/utils.js';
+import { SCHOOL } from '../../data/schools.js';
 
 const ROLES = [
   { key: 'student', label: 'Student', icon: UserRound },
@@ -93,8 +94,8 @@ export default function Login() {
                   <AppLogo className="h-10 w-10" />
                 </span>
                 <div>
-                  <p className="login-ticket-school">Bagong Pag-asa NHS</p>
-                  <p className="login-ticket-division">Regional Science High School</p>
+                  <p className="login-ticket-school">{SCHOOL.name}</p>
+                  <p className="login-ticket-division">Student &amp; Teacher Portal</p>
                 </div>
               </div>
 
