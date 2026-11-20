@@ -2,6 +2,9 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import ProtectedRoute from './ProtectedRoute.jsx';
 import AppLayout from '../components/layout/AppLayout.jsx';
 import { useAuth } from '../context/AuthContext.jsx';
+import { dashboardFor } from '../lib/api.js';
+import Register from '../pages/auth/Register.jsx';
+import AdminPortal from '../pages/admin/AdminPortal.jsx';
 
 import Login from '../pages/auth/Login.jsx';
 
@@ -15,7 +18,6 @@ import TeacherDashboard from '../pages/teacher/Dashboard.jsx';
 import TeacherClasses from '../pages/teacher/Classes.jsx';
 import TeacherClassDetail from '../pages/teacher/ClassDetail.jsx';
 import TeacherStudents from '../pages/teacher/Students.jsx';
-import TeacherCreateStudent from '../pages/teacher/CreateStudent.jsx';
 import TeacherStudentDetail from '../pages/teacher/StudentDetail.jsx';
 import TeacherClassRecord from '../pages/teacher/ClassRecord.jsx';
 import TeacherAcademicRecords from '../pages/teacher/AcademicRecords.jsx';
@@ -26,7 +28,7 @@ function RootRedirect() {
   const { user, initializing } = useAuth();
   if (initializing) return null;
   if (!user) return <Navigate to="/login" replace />;
-  return <Navigate to={user.role === 'teacher' ? '/teacher/dashboard' : '/student/dashboard'} replace />;
+  return <Navigate to={dashboardFor(user.role)} replace />;
 }
 
 export default function AppRoutes() {
@@ -34,6 +36,14 @@ export default function AppRoutes() {
     <Routes>
       <Route path="/" element={<RootRedirect />} />
       <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      <Route element={<ProtectedRoute role="admin" />}>
+        <Route element={<AppLayout />}>
+          <Route path="/admin/dashboard" element={<AdminPortal view="dashboard" />} />
+          <Route path="/admin/registrations" element={<AdminPortal view="registrations" />} />
+          <Route path="/admin/accounts" element={<AdminPortal view="accounts" />} />
+        </Route>
+      </Route>
 
       <Route element={<ProtectedRoute role="student" />}>
         <Route element={<AppLayout />}>
@@ -51,7 +61,7 @@ export default function AppRoutes() {
           <Route path="/teacher/classes" element={<TeacherClasses />} />
           <Route path="/teacher/classes/:classId" element={<TeacherClassDetail />} />
           <Route path="/teacher/students" element={<TeacherStudents />} />
-          <Route path="/teacher/students/create" element={<TeacherCreateStudent />} />
+          <Route path="/teacher/students/create" element={<Register teacherMode />} />
           <Route path="/teacher/students/:studentId" element={<TeacherStudentDetail />} />
           <Route path="/teacher/class-record" element={<TeacherClassRecord />} />
           <Route path="/teacher/academic-records" element={<TeacherAcademicRecords />} />

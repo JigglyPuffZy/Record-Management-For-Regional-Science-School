@@ -1,6 +1,9 @@
 import { readFileSync } from 'fs';
 import createStudent from '../api/create-student.js';
 import saveGrade from '../api/save-grade.js';
+import access from '../api/access.js';
+import admin from '../api/admin.js';
+import records from '../api/records.js';
 
 function loadEnv() {
   try {
@@ -47,10 +50,14 @@ function mockRes(res) {
     end() {
       res.end();
     },
+    setHeader(name, value) { res.setHeader(name, value); },
   };
 }
 
 const routes = {
+  '/api/access': access,
+  '/api/admin': admin,
+  '/api/records': records,
   '/api/create-student': createStudent,
   '/api/save-grade': saveGrade,
 };

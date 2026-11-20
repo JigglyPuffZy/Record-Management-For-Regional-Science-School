@@ -1,16 +1,13 @@
 import { ACTIVE_SCHOOL_YEAR } from './schools.js';
-import { SUBJECTS } from './subjects.js';
 
-// Matches Supabase after cleanup_single_teacher.sql — one class, one admin teacher.
-export const CLASSES = [
-  { id: 'G10-RIZAL', gradeLevel: 'Grade 10', section: 'Rizal', schoolYear: ACTIVE_SCHOOL_YEAR, adviserId: 'T-ADMIN' },
-];
+// Populated from the authorized records API after sign-in.
+export let CLASSES = [];
 
-export const TEACHING_ASSIGNMENTS = SUBJECTS.map((s) => ({
-  teacherId: 'T-ADMIN',
-  classId: 'G10-RIZAL',
-  subjectId: s.id,
-}));
+export let TEACHING_ASSIGNMENTS = [];
+export function setClassesCache(classes, assignments) {
+  CLASSES = classes;
+  TEACHING_ASSIGNMENTS = assignments;
+}
 
 export function getClassById(classId) {
   return CLASSES.find((c) => c.id === classId) ?? null;

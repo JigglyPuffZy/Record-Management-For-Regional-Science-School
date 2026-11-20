@@ -10,7 +10,7 @@ import {
   AlertCircle,
   CheckCircle2,
   Search,
-  Plus,
+  UserPlus,
 } from 'lucide-react';
 import PageContainer from '../../components/layout/PageContainer.jsx';
 import AppLogo from '../../components/ui/AppLogo.jsx';
@@ -43,7 +43,7 @@ function formatToday() {
 const QUICK_LINKS = [
   { to: '/teacher/students', label: 'Student roster', hint: 'Search & manage', icon: Search },
   { to: '/teacher/academic-records', label: 'SF10 records', hint: 'View learner forms', icon: GraduationCap },
-  { to: '/teacher/students/create', label: 'Enroll student', hint: 'Create account', icon: Plus },
+  { to: '/teacher/students/create', label: 'Create student', hint: 'Submit for approval', icon: UserPlus },
   { to: '/teacher/classes', label: 'All sections', hint: 'Class overview', icon: School },
 ];
 
@@ -70,7 +70,7 @@ export default function TeacherDashboard() {
         <div className="dash-hero-inner">
           <div className="dash-hero-copy">
             <div className="dash-hero-brand">
-              <AppLogo className="h-9 w-9" />
+              <AppLogo className="h-14 w-14 shrink-0" />
               <div>
                 <p className="dash-hero-eyebrow">{greeting()}</p>
                 <p className="dash-hero-date">{formatToday()}</p>

@@ -1,20 +1,8 @@
-// Teacher profile metadata for UI (login is via Supabase login_teacher RPC).
-// Must match supabase/cleanup_single_teacher.sql
+// Authorized teacher metadata loaded from the server after sign-in.
 
-export const TEACHERS = [
-  {
-    teacherId: 'T-ADMIN',
-    name: 'Admin',
-    email: 'admin@bpans.edu.ph',
-    position: 'Teacher III — System Administrator',
-    adviserOfClassId: 'G10-RIZAL',
-  },
-];
+export let TEACHERS = [];
+export function setTeachersCache(teachers) { TEACHERS = teachers; }
 
 export function getTeacherById(teacherId) {
   return TEACHERS.find((t) => t.teacherId === teacherId) ?? null;
-}
-
-export function findTeacherByCredentials(idOrEmail, password) {
-  return null;
 }

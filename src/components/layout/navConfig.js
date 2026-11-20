@@ -8,6 +8,8 @@ import {
   Users,
   ClipboardList,
   GraduationCap,
+  ShieldCheck,
+  UserCheck,
 } from 'lucide-react';
 
 export const STUDENT_NAV = [
@@ -26,6 +28,13 @@ export const TEACHER_NAV = [
   { to: '/teacher/academic-records', label: 'SF10', icon: GraduationCap },
 ];
 
+export const ADMIN_NAV = [
+  { to: '/admin/dashboard', label: 'Overview', icon: ShieldCheck },
+  { to: '/admin/registrations', label: 'Registrations', icon: UserCheck },
+  { to: '/admin/accounts', label: 'Accounts', icon: Users },
+];
+
 export function getNavForRole(role) {
+  if (role === 'admin') return ADMIN_NAV;
   return role === 'teacher' ? TEACHER_NAV : STUDENT_NAV;
 }

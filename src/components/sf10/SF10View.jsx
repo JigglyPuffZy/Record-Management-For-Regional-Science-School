@@ -2,6 +2,7 @@ import { Lock } from 'lucide-react';
 import { formatDate, formatGrade, getRemarks } from '../../lib/utils.js';
 import { getDescriptorForGradeLevel } from '../../lib/grading.js';
 import AcademicHistory from './AcademicHistory.jsx';
+import AppLogo from '../ui/AppLogo.jsx';
 
 function DescriptorCell({ gradeLevel, finalGrade }) {
   const { descriptor, filipinoDescriptor, remarks } = getDescriptorForGradeLevel(gradeLevel, finalGrade);
@@ -85,6 +86,7 @@ export default function SF10View({ sf10 }) {
         </div>
 
         <header className="mb-6 border-b-2 border-slate-800 pb-4 text-center">
+          <AppLogo className="mx-auto mb-3 h-20 w-20" />
           <p className="text-xs uppercase tracking-widest text-slate-500">Republic of the Philippines &middot; Department of Education</p>
           <h1 className="mt-1 text-lg font-bold uppercase tracking-wide">{learner.school}</h1>
           <p className="text-sm font-semibold uppercase tracking-wide text-slate-700">

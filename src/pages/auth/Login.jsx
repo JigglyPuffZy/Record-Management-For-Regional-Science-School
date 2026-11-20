@@ -1,19 +1,22 @@
 import { useState } from 'react';
-import { useNavigate, Navigate } from 'react-router-dom';
+import { useNavigate, Navigate, Link } from 'react-router-dom';
 import {
   UserRound,
   Users,
   Eye,
   EyeOff,
   ArrowRight,
+  ShieldCheck,
 } from 'lucide-react';
 import AppLogo from '../../components/ui/AppLogo.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useToast } from '../../context/ToastContext.jsx';
 import { cn } from '../../lib/utils.js';
 import { SCHOOL } from '../../data/schools.js';
+import { dashboardFor } from '../../lib/api.js';
 
 const ROLES = [
+  { key: 'admin', label: 'Admin', icon: ShieldCheck },
   { key: 'student', label: 'Student', icon: UserRound },
   { key: 'teacher', label: 'Teacher', icon: Users },
 ];
@@ -41,7 +44,7 @@ export default function Login() {
   const [submitting, setSubmitting] = useState(false);
 
   if (user) {
-    return <Navigate to={user.role === 'teacher' ? '/teacher/dashboard' : '/student/dashboard'} replace />;
+    return <Navigate to={dashboardFor(user.role)} replace />;
   }
 
   const switchRole = (next) => {
@@ -66,7 +69,7 @@ export default function Login() {
         return;
       }
       toast.success('Welcome back!');
-      navigate(role === 'teacher' ? '/teacher/dashboard' : '/student/dashboard', { replace: true });
+      navigate(dashboardFor(result.role), { replace: true });
     } catch {
       setError('Something went wrong. Please try again.');
     } finally {
@@ -91,11 +94,11 @@ export default function Login() {
 
               <div className="login-ticket-brand">
                 <span className="login-ticket-logo">
-                  <AppLogo className="h-10 w-10" />
+                  <AppLogo className="h-16 w-16" />
                 </span>
                 <div>
                   <p className="login-ticket-school">{SCHOOL.name}</p>
-                  <p className="login-ticket-division">Student &amp; Teacher Portal</p>
+                  <p className="login-ticket-division">School Records Portal</p>
                 </div>
               </div>
 
@@ -115,7 +118,7 @@ export default function Login() {
               <p className="login-ticket-footnote">
                 SF10 &amp; Class Record Management
                 <br />
-                DepEd Quezon City
+                Regional Science High School for Region II
               </p>
             </div>
           </div>
@@ -156,13 +159,13 @@ export default function Login() {
             <form onSubmit={handleSubmit} className="login-ticket-form">
               <label className="login-ticket-field">
                 <span className="login-ticket-label">
-                  {role === 'student' ? 'LRN' : 'Teacher ID / Email'}
+                  {role === 'student' ? 'LRN / Email' : role === 'admin' ? 'Admin ID / Email' : 'Teacher ID / Email'}
                 </span>
                 <input
                   type="text"
                   autoComplete="username"
                   autoFocus
-                  placeholder={role === 'student' ? '12-digit learner number' : 'T-ADMIN or school email'}
+                  placeholder={role === 'student' ? '12-digit learner number' : role === 'admin' ? 'Admin ID or email' : 'Teacher ID or school email'}
                   value={id}
                   onChange={(e) => setId(e.target.value)}
                   className="login-ticket-input"
@@ -206,6 +209,7 @@ export default function Login() {
                 )}
               </button>
             </form>
+            <p className="mt-5 text-center text-sm text-slate-600">New teacher or student? <Link to="/register" className="font-semibold text-brand-700 underline">Register for approval</Link></p>
           </div>
         </article>
       </div>

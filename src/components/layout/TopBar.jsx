@@ -6,6 +6,7 @@ import { useAuth } from '../../context/AuthContext.jsx';
 import { getActiveSchoolYear } from '../../services/academicRecords.js';
 import { getNavForRole } from './navConfig.js';
 import { initials, cn } from '../../lib/utils.js';
+import { dashboardFor } from '../../lib/api.js';
 
 export default function TopBar() {
   const { user, logout } = useAuth();
@@ -38,18 +39,18 @@ export default function TopBar() {
     };
   }, [menuOpen]);
 
-  const home = user?.role === 'teacher' ? '/teacher/dashboard' : '/student/dashboard';
+  const home = dashboardFor(user?.role);
 
   return (
     <header className="no-print sticky top-0 z-40 border-b border-slate-200/80 bg-white/95 px-4 py-3 backdrop-blur-sm pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
         <div className="flex items-center justify-between gap-3">
           <Link to={home} className="flex min-w-0 items-center gap-2.5">
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white ring-1 ring-slate-200">
-              <AppLogo className="h-8 w-8" />
+            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-brand-700">
+              <AppLogo className="h-12 w-12" />
             </span>
             <div className="min-w-0">
-              <p className="truncate text-sm font-bold text-slate-900">SF10 Records</p>
+              <p className="truncate text-sm font-bold text-slate-900">{user?.role === 'admin' ? 'School Administration' : 'SF10 Records'}</p>
               <p className="truncate text-[11px] text-slate-500">SY {schoolYear}</p>
             </div>
           </Link>
@@ -83,6 +84,7 @@ export default function TopBar() {
                     <p className="truncate text-sm font-semibold text-slate-900">{user?.name}</p>
                     <p className="truncate text-xs text-slate-500">{user?.id}</p>
                   </div>
+                  {user?.role !== 'admin' && <>
                   <Link
                     to={user?.role === 'teacher' ? '/teacher/profile' : '/student/profile'}
                     onClick={() => setMenuOpen(false)}
@@ -97,6 +99,7 @@ export default function TopBar() {
                   >
                     Settings
                   </Link>
+                  </>}
                   <button
                     type="button"
                     onClick={() => { setMenuOpen(false); logout(); }}

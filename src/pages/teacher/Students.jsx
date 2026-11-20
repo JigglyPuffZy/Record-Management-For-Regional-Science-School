@@ -39,11 +39,7 @@ export default function TeacherStudents() {
       title="Students"
       icon={Users}
       description="Every learner enrolled in a class or subject assigned to you."
-      actions={
-        <Link to="/teacher/students/create">
-          <Button icon={UserPlus}>Create Student Account</Button>
-        </Link>
-      }
+      actions={<Link to="/teacher/students/create"><Button icon={UserPlus}>Create Student Account</Button></Link>}
     >
       <Card className="mb-5">
         <CardBody className="grid grid-cols-1 gap-4 sm:grid-cols-3">
