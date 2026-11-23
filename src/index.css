@@ -567,7 +567,7 @@
   }
 
   .cr-body-row:nth-child(even) .cr-td--index {
-    @apply bg-slate-200/80;
+    @apply bg-slate-200;
   }
 
   .cr-body-row:nth-child(even) .cr-td--name {
@@ -608,7 +608,7 @@
 
   .cr-body-row--dirty .cr-td--index,
   .cr-body-row--dirty .cr-td--name {
-    @apply bg-amber-50/90;
+    @apply bg-amber-50;
   }
 
   .cr-body-row--dirty .cr-td--index {
@@ -637,6 +637,26 @@
 
   .cr-score-cell--invalid {
     @apply border-rose-300 bg-rose-50 text-rose-700 focus:border-rose-500 focus:ring-rose-500/20;
+  }
+
+  .cr-totals-row {
+    @apply bg-brand-50;
+  }
+
+  .cr-total-label {
+    @apply sticky left-0 z-20 bg-brand-50 px-3 py-3 text-left text-brand-900;
+  }
+
+  .cr-score-fraction {
+    @apply mx-auto flex min-w-[6rem] items-center justify-center gap-1;
+  }
+
+  .cr-score-fraction .cr-score-cell {
+    @apply m-0 w-12 shrink-0;
+  }
+
+  .cr-score-denominator {
+    @apply whitespace-nowrap text-xs font-semibold tabular-nums text-slate-600;
   }
 
   .cr-score-cell--disabled {

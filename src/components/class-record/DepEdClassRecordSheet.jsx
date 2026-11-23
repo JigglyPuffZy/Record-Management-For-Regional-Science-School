@@ -19,8 +19,8 @@ import { transmuteInitialGrade } from '../../lib/transmutation.js';
 function GroupHeader({ title, detail, tone, colSpan = 1, rowSpan = 1 }) {
   return (
     <th className={cn('cr-th', `cr-th--${tone}`)} colSpan={colSpan} rowSpan={rowSpan} scope="colgroup">
-      <span className="cr-th-title">{title}</span>
-      {detail ? <span className="cr-th-detail">{detail}</span> : null}
+      <span className="cr-th-title block">{title}</span>
+      {detail ? <span className="cr-th-detail block">{detail}</span> : null}
     </th>
   );
 }
@@ -33,6 +33,8 @@ export default function DepEdClassRecordSheet({
   gradeComponents,
   rows,
   scoresByStudent,
+  totalPoints,
+  onTotalPointsChange,
   invalidCells,
   dirtyIds,
   onScoreChange,
@@ -49,16 +51,6 @@ export default function DepEdClassRecordSheet({
   const wwPct = Math.round((gradeComponents?.ww ?? 0.2) * 100);
   const ptPct = Math.round((gradeComponents?.pt ?? 0.5) * 100);
   const exPct = Math.round((gradeComponents?.ex ?? 0.3) * 100);
-
-  if (!rows.length) {
-    return (
-      <EmptyState
-        icon={ClipboardList}
-        title="No students in this class"
-        description="Enroll learners first, then return to enter scores."
-      />
-    );
-  }
 
   const dirtyCount = pendingSaveCount ?? dirtyIds.size;
 
@@ -145,10 +137,32 @@ export default function DepEdClassRecordSheet({
               </tr>
             </thead>
             <tbody>
+              <tr className="cr-totals-row">
+                <th colSpan={2} scope="row" className="cr-total-label">
+                  <span className="block font-bold">Total points</span>
+                  <span className="block text-xs font-normal">Set once per assessment for the class</span>
+                </th>
+                {[
+                  ['ww', wwCols, 'Written work'],
+                  ['pt', ptCols, 'Performance task'],
+                  ['qa', exCols, 'Examination'],
+                ].flatMap(([category, columns, label]) => columns.map(i => <td key={`total-${category}-${i}`} className="cr-td cr-td--score">
+                  <span className="mb-1 block text-center text-[10px] font-semibold uppercase tracking-wide text-brand-800">Over</span>
+                  <ScoreCell
+                    ariaLabel={`${label} ${i + 1}, total points`}
+                    value={totalPoints[category][i]}
+                    invalid={invalidCells.has(`totals:${category}:${i}`)}
+                    onChange={value => onTotalPointsChange(category, i, value)}
+                  />
+                </td>))}
+                <td colSpan={3} className="cr-td px-3 text-center text-xs text-slate-600">Earned ÷ total points × 100, then apply weights</td>
+                <td className="cr-td no-print" />
+              </tr>
+              {!rows.length && <tr><td colSpan={28}><EmptyState icon={ClipboardList} title="No students match your search" description="Clear the search to see the class roster." /></td></tr>}
               {rows.map((row, index) => {
                 const studentId = row.student.studentId;
                 const scores = scoresByStudent[studentId];
-                const initial = scores ? computeInitialGrade(scores, gradeComponents) : null;
+                const initial = scores ? computeInitialGrade(scores, gradeComponents, totalPoints) : null;
                 const transmuted = initial != null ? transmuteInitialGrade(initial) : null;
                 const isDirty = dirtyIds.has(studentId);
                 const name = formatRecordName(row.student);
@@ -167,6 +181,7 @@ export default function DepEdClassRecordSheet({
                           <ScoreCell
                             ariaLabel={`${name}, written work ${i + 1}`}
                             value={scores?.ww[i] ?? ''}
+                            totalPoints={totalPoints.ww[i]}
                             invalid={invalidCells.has(key)}
                             onChange={(val) => onScoreChange(studentId, 'ww', i, val)}
                           />
@@ -180,6 +195,7 @@ export default function DepEdClassRecordSheet({
                           <ScoreCell
                             ariaLabel={`${name}, performance task ${i + 1}`}
                             value={scores?.pt[i] ?? ''}
+                            totalPoints={totalPoints.pt[i]}
                             invalid={invalidCells.has(key)}
                             onChange={(val) => onScoreChange(studentId, 'pt', i, val)}
                           />
@@ -193,6 +209,7 @@ export default function DepEdClassRecordSheet({
                           <ScoreCell
                             ariaLabel={`${name}, examination ${i + 1}`}
                             value={scores?.qa[i] ?? ''}
+                            totalPoints={totalPoints.qa[i]}
                             invalid={invalidCells.has(key)}
                             onChange={(val) => onScoreChange(studentId, 'qa', i, val)}
                           />
@@ -232,7 +249,7 @@ export default function DepEdClassRecordSheet({
           </table>
         </div>
         <p className="cr-grid-hint no-print">
-          Scroll horizontally for score columns · Transmuted grade is saved to SF10
+          Set total points in the top row · Enter each score over its total · Blank scores are ungraded; enter 0 for a missed assessment · Transmuted grade is saved to SF10
         </p>
       </div>
     </div>

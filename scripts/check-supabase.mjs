@@ -8,13 +8,15 @@ if (!url || !serviceKey || !anonKey) throw new Error('Set Supabase URL, service 
 const db = createClient(url, serviceKey, { auth: { persistSession: false } });
 const anon = createClient(url, anonKey, { auth: { persistSession: false } });
 let failed = false;
+console.log('Configured Supabase project:', new URL(url).hostname.split('.')[0]);
 for (const table of ['app_accounts', 'classes', 'teachers', 'students', 'grade_records']) {
-  const { error, count } = await db.from(table).select('*', { count: 'exact', head: true });
-  console.log(error ? `FAIL ${table}: ${error.code || 'connection failure'}` : `OK ${table}: ${count} rows`);
+  // GET exposes missing-table errors that an empty HEAD response can hide.
+  const { error, count } = await db.from(table).select('*', { count: 'exact' }).limit(1);
+  console.log(error ? `FAIL ${table}: ${error.code || 'connection failure'} — ${error.message}` : `OK ${table}: ${count} rows`);
   if (error) failed = true;
 }
 for (const table of ['app_accounts', 'students', 'teachers', 'grade_records']) {
-  const { error } = await anon.from(table).select('*', { head: true }).limit(1);
+  const { error } = await anon.from(table).select('*').limit(1);
   const denied = error?.code === '42501';
   console.log(denied ? `OK anonymous access denied: ${table}` : `FAIL verify anonymous grants: ${table}`);
   if (!denied) failed = true;

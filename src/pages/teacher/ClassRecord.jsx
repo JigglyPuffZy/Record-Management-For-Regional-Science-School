@@ -31,14 +31,13 @@ import {
   createEmptyScoreSet,
   normalizeScoreSet,
   computeInitialGrade,
+  loadSheetTotalPoints,
+  saveSheetTotalPoints,
+  collectInvalidScoreCells,
+  isBlankScore,
 } from '../../lib/classRecordSheet.js';
 import { getGradeComponentsForSubject } from '../../lib/gradeComponents.js';
 import { transmuteInitialGrade } from '../../lib/transmutation.js';
-
-function isValidScoreCell(value) {
-  if (value === '' || value === null || value === undefined) return true;
-  return isValidGrade(value);
-}
 
 function buildScoresState(rows, stored) {
   const next = {};
@@ -47,22 +46,6 @@ function buildScoresState(rows, stored) {
     next[id] = normalizeScoreSet(stored[id]);
   }
   return next;
-}
-
-function collectInvalidCells(scoresByStudent) {
-  const invalid = new Set();
-  for (const [studentId, scores] of Object.entries(scoresByStudent)) {
-    scores.ww.forEach((val, i) => {
-      if (!isValidScoreCell(val)) invalid.add(`${studentId}:ww:${i}`);
-    });
-    scores.pt.forEach((val, i) => {
-      if (!isValidScoreCell(val)) invalid.add(`${studentId}:pt:${i}`);
-    });
-    scores.qa.forEach((val, i) => {
-      if (!isValidScoreCell(val)) invalid.add(`${studentId}:qa:${i}`);
-    });
-  }
-  return invalid;
 }
 
 export default function TeacherClassRecord() {
@@ -92,6 +75,7 @@ export default function TeacherClassRecord() {
   const [query, setQuery] = useState('');
 
   const [scoresByStudent, setScoresByStudent] = useState({});
+  const [totalPoints, setTotalPoints] = useState(createEmptyScoreSet);
   const [dirtyIds, setDirtyIds] = useState(new Set());
   const [invalidCells, setInvalidCells] = useState(new Set());
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -120,11 +104,11 @@ export default function TeacherClassRecord() {
 
   const resolveTermGrade = useCallback(
     (scores) => {
-      const initial = scores ? computeInitialGrade(scores, gradeComponents) : null;
+      const initial = scores ? computeInitialGrade(scores, gradeComponents, totalPoints) : null;
       const transmuted = initial != null ? transmuteInitialGrade(initial) : null;
       return { initial, transmuted };
     },
-    [gradeComponents],
+    [gradeComponents, totalPoints],
   );
 
   const storageKey = useMemo(
@@ -154,24 +138,29 @@ export default function TeacherClassRecord() {
   useEffect(() => {
     if (!storageKey || !rows.length) {
       setScoresByStudent({});
+      setTotalPoints(createEmptyScoreSet());
       setDirtyIds(new Set());
       setInvalidCells(new Set());
       return;
     }
     const stored = loadSheetScores(storageKey);
     const nextScores = buildScoresState(rows, stored);
+    const nextTotals = loadSheetTotalPoints(storageKey, stored);
+    saveSheetTotalPoints(storageKey, nextTotals);
     setScoresByStudent(nextScores);
-    setInvalidCells(collectInvalidCells(nextScores));
+    setTotalPoints(nextTotals);
+    setInvalidCells(collectInvalidScoreCells(nextScores, nextTotals));
 
     const dirty = new Set();
     for (const row of rows) {
       const id = row.student.studentId;
-      const { transmuted } = resolveTermGrade(nextScores[id] ?? createEmptyScoreSet());
+      const initial = computeInitialGrade(nextScores[id] ?? createEmptyScoreSet(), gradeComponents, nextTotals);
+      const transmuted = initial === null ? null : transmuteInitialGrade(initial);
       const saved = activeField ? row[activeField] : null;
       if (transmuted != null && transmuted !== saved) dirty.add(id);
     }
     setDirtyIds(dirty);
-  }, [storageKey, rows, activeField, resolveTermGrade]);
+  }, [storageKey, rows, activeField, gradeComponents]);
 
   const persistScores = useCallback((nextScores) => {
     if (storageKey) saveSheetScores(storageKey, nextScores);
@@ -196,13 +185,26 @@ export default function TeacherClassRecord() {
       };
       const next = { ...prev, [studentId]: nextSet };
       persistScores(next);
-      setInvalidCells(collectInvalidCells(next));
+      setInvalidCells(collectInvalidScoreCells(next, totalPoints));
       return next;
     });
     setDirtyIds((prev) => new Set(prev).add(studentId));
   }
 
+  function handleTotalPointsChange(category, index, raw) {
+    const nextTotals = { ...totalPoints, [category]: totalPoints[category].map((value, i) => i === index ? raw : value) };
+    setTotalPoints(nextTotals);
+    if (storageKey) saveSheetTotalPoints(storageKey, nextTotals);
+    setInvalidCells(collectInvalidScoreCells(scoresByStudent, nextTotals));
+    setDirtyIds(prev => new Set([...prev, ...Object.entries(scoresByStudent).filter(([, scores]) => Object.values(scores).some(values => values.some(value => !isBlankScore(value)))).map(([id]) => id)]));
+  }
+
   async function handleSaveRow(studentId) {
+    const errors = collectInvalidScoreCells({ [studentId]: scoresByStudent[studentId] ?? createEmptyScoreSet() }, totalPoints);
+    if (errors.size) {
+      toast.error('Enter positive total points and scores from 0 up to their total points.');
+      return;
+    }
     const scores = scoresByStudent[studentId];
     const { initial, transmuted } = resolveTermGrade(scores);
     if (initial === null) {
@@ -243,13 +245,17 @@ export default function TeacherClassRecord() {
 
   function handleSaveAll() {
     if (invalidCells.size > 0) {
-      toast.error('Invalid score. Please enter values from 0 to 100.');
+      toast.error('Enter positive total points and scores from 0 up to their total points.');
       return;
     }
     setConfirmOpen(true);
   }
 
   async function confirmSaveAll() {
+    if (collectInvalidScoreCells(scoresByStudent, totalPoints).size) {
+      toast.error('Correct the scores and total points before saving.');
+      return;
+    }
     setSaving(true);
     try {
       const entries = [...dirtyIds].map((studentId) => {
@@ -269,7 +275,7 @@ export default function TeacherClassRecord() {
         return;
       }
       await saveGradesBulk(entries);
-      setDirtyIds(new Set());
+      setDirtyIds(prev => { const remaining = new Set(prev); entries.forEach(entry => remaining.delete(entry.studentId)); return remaining; });
       toast.success('Grades successfully saved.');
       setConfirmOpen(false);
     } catch (err) {
@@ -287,7 +293,7 @@ export default function TeacherClassRecord() {
     <PageContainer
       title="Class Record"
       icon={ClipboardList}
-      description="Enter written works, performance tasks, and examination scores. The system computes the initial grade, applies the SY 2026–2027 transmutation table, and saves the transmuted grade to each student's SF10."
+      description="Enter scores over their total points. The system computes percentage scores, applies subject weights and transmutation, and saves the term grade to each student's SF10."
     >
       <Card className="mb-5 no-print">
         <CardBody className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -317,6 +323,8 @@ export default function TeacherClassRecord() {
             gradeComponents={gradeComponents}
             rows={filteredRows}
             scoresByStudent={scoresByStudent}
+            totalPoints={totalPoints}
+            onTotalPointsChange={handleTotalPointsChange}
             invalidCells={invalidCells}
             dirtyIds={dirtyIds}
             onScoreChange={handleScoreChange}

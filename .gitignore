@@ -8,3 +8,7 @@ dist-ssr
 
 .vercel
 .env*
+
+# Local setup files containing the owner's chosen admin credentials.
+supabase/setup_admin.sql
+tests/admin-setup.test.mjs

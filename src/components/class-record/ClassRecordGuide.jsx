@@ -30,11 +30,11 @@ export default function ClassRecordGuide({ gradeComponents }) {
           <div className="cr-guide-flow">
             <div className="cr-flow-step">
               <span className="cr-flow-num">1</span>
-              <p>Enter scores (0–100) in Written Works, Performance Tasks, and Examinations.</p>
+              <p>Set each assessment&apos;s total points in the top row, then enter scores such as 8 / 10. Scores cannot exceed their total points.</p>
             </div>
             <div className="cr-flow-step">
               <span className="cr-flow-num">2</span>
-              <p>Initial grade is computed using this subject&apos;s WW / PT / EX weights.</p>
+              <p>For each category: total earned points ÷ total possible points × 100. Apply this subject&apos;s WW / PT / EX weights, then add the weighted scores.</p>
             </div>
             <div className="cr-flow-step">
               <span className="cr-flow-num">3</span>

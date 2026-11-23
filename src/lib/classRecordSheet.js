@@ -35,28 +35,76 @@ export function saveSheetScores(key, scoresByStudent) {
   }
 }
 
-function parseScore(value) {
-  if (value === '' || value === null || value === undefined) return null;
-  const num = Number(value);
-  if (Number.isNaN(num)) return null;
-  return num;
+export const SCORE_CATEGORIES = ['ww', 'pt', 'qa'];
+export const isBlankScore = value => value === null || value === undefined || String(value).trim() === '';
+
+export function loadSheetTotalPoints(key, legacyScores = {}) {
+  try {
+    const raw = localStorage.getItem(`${key}:total-points`);
+    if (raw) return normalizeScoreSet(JSON.parse(raw));
+  } catch { /* fall back to the existing percentage-based scores */ }
+  const totals = createEmptyScoreSet();
+  for (const category of SCORE_CATEGORIES) {
+    totals[category] = totals[category].map((_, index) => Object.values(legacyScores).some(scores => !isBlankScore(scores?.[category]?.[index])) ? '100' : '');
+  }
+  return totals;
 }
 
-function categoryAverage(values) {
-  const nums = values.map(parseScore).filter((n) => n !== null);
-  if (!nums.length) return null;
-  return nums.reduce((sum, n) => sum + n, 0) / nums.length;
+export function saveSheetTotalPoints(key, totals) {
+  try { localStorage.setItem(`${key}:total-points`, JSON.stringify(totals)); }
+  catch { /* ignore quota errors */ }
+}
+
+export function isValidTotalPoints(value) {
+  return !isBlankScore(value) && Number.isFinite(Number(value)) && Number(value) > 0;
+}
+
+export function isValidAssessmentScore(value, total) {
+  if (isBlankScore(value)) return true;
+  return isValidTotalPoints(total) && Number.isFinite(Number(value)) && Number(value) >= 0 && Number(value) <= Number(total);
+}
+
+export function collectInvalidScoreCells(scoresByStudent, totals) {
+  const invalid = new Set();
+  for (const category of SCORE_CATEGORIES) {
+    for (const [index, total] of totals[category].entries()) {
+      if (!isBlankScore(total) && !isValidTotalPoints(total)) invalid.add(`totals:${category}:${index}`);
+      for (const [studentId, scores] of Object.entries(scoresByStudent)) {
+        if (!isValidAssessmentScore(scores[category][index], total)) {
+          invalid.add(`${studentId}:${category}:${index}`);
+          if (!isValidTotalPoints(total)) invalid.add(`totals:${category}:${index}`);
+        }
+      }
+    }
+  }
+  return invalid;
+}
+
+export function categoryPercentage(values, totals) {
+  let earned = 0;
+  let possible = 0;
+  for (const [index, value] of values.entries()) {
+    if (isBlankScore(value)) continue;
+    const total = totals === undefined ? 100 : totals[index];
+    if (!isValidAssessmentScore(value, total)) return null;
+    earned += Number(value);
+    possible += Number(total);
+  }
+  return possible > 0 ? (earned / possible) * 100 : null;
 }
 
 /**
  * DepEd-style initial grade using subject-specific WW / PT / EX weights.
  * @param {{ ww: string[], pt: string[], qa: string[] }} scoreSet
  * @param {{ ww?: number, pt?: number, ex?: number }} [weights]
+ * @param {{ ww: string[], pt: string[], qa: string[] }} [totalPoints] Assessment maxima; legacy callers use /100.
  */
-export function computeInitialGrade(scoreSet, weights = { ww: 0.2, pt: 0.5, ex: 0.3 }) {
-  const ww = categoryAverage(scoreSet.ww);
-  const pt = categoryAverage(scoreSet.pt);
-  const ex = categoryAverage(scoreSet.qa);
+export function computeInitialGrade(scoreSet, weights = { ww: 0.2, pt: 0.5, ex: 0.3 }, totalPoints) {
+  const effectiveTotals = totalPoints ?? Object.fromEntries(SCORE_CATEGORIES.map(category => [category, scoreSet[category].map(() => '100')]));
+  if (collectInvalidScoreCells({ student: scoreSet }, effectiveTotals).size) return null;
+  const ww = categoryPercentage(scoreSet.ww, totalPoints?.ww);
+  const pt = categoryPercentage(scoreSet.pt, totalPoints?.pt);
+  const ex = categoryPercentage(scoreSet.qa, totalPoints?.qa);
 
   if (ww === null && pt === null && ex === null) return null;
 
