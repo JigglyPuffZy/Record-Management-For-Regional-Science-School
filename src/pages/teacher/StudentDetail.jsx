@@ -4,6 +4,7 @@ import PageContainer from '../../components/layout/PageContainer.jsx';
 import Button from '../../components/ui/Button.jsx';
 import EmptyState from '../../components/ui/EmptyState.jsx';
 import SF10View from '../../components/sf10/SF10View.jsx';
+import { formatClassLabel } from '../../lib/utils.js';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { teacherCanViewStudent, getSF10 } from '../../services/academicRecords.js';
 
@@ -32,7 +33,7 @@ export default function TeacherStudentDetail() {
     <PageContainer
       title={sf10.learner.name}
       icon={FileText}
-      description={`${sf10.learner.gradeLevel} - ${sf10.learner.section} · LRN ${sf10.learner.lrn}`}
+      description={`${formatClassLabel(sf10.learner.gradeLevel, sf10.learner.section)} · LRN ${sf10.learner.lrn}`}
       actions={
         <Button icon={Printer} onClick={() => window.print()}>
           Print SF10

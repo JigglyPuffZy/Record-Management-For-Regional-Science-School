@@ -10,6 +10,7 @@ import Badge from '../../components/ui/Badge.jsx';
 import Modal from '../../components/ui/Modal.jsx';
 import { apiPost } from '../../lib/api.js';
 import { useToast } from '../../context/ToastContext.jsx';
+import { formatClassLabel } from '../../lib/utils.js';
 
 const date = value => value ? new Date(value).toLocaleString('en-PH', { dateStyle: 'medium', timeStyle: 'short' }) : '—';
 const tone = status => status === 'approved' ? 'emerald' : status === 'rejected' ? 'rose' : 'amber';
@@ -55,7 +56,7 @@ export default function AdminPortal({ view }) {
     const assignments = data.assignments.filter(a => a.teacher_id === account.linked_id);
     return <Card key={account.id}><CardBody>
       <div className="flex flex-wrap items-start justify-between gap-3"><div className="min-w-0"><h2 className="text-lg font-bold text-slate-900">{account.name}</h2><p className="break-all text-sm text-slate-500">{account.email}</p></div><div className="flex gap-2"><Badge tone="slate">{account.role}</Badge><Badge tone={tone(account.status)}>{account.status}</Badge></div></div>
-      <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-3"><div><dt className="text-xs text-slate-500">{account.role === 'teacher' ? 'Teacher ID' : 'LRN'}</dt><dd className="font-semibold">{account.identifier.toUpperCase()}</dd></div><div><dt className="text-xs text-slate-500">{account.status === 'approved' ? 'Confirmed section' : 'Requested section'}</dt><dd>{cls ? `${cls.grade_level} – ${cls.section}` : 'Existing account'}</dd></div><div><dt className="text-xs text-slate-500">Submitted</dt><dd>{date(account.created_at)}</dd></div></dl>
+      <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-3"><div><dt className="text-xs text-slate-500">{account.role === 'teacher' ? 'Teacher ID' : 'LRN'}</dt><dd className="font-semibold">{account.identifier.toUpperCase()}</dd></div><div><dt className="text-xs text-slate-500">{account.status === 'approved' ? 'Confirmed section' : 'Requested section'}</dt><dd>{cls ? formatClassLabel(cls.grade_level, cls.section) : 'Existing account'}</dd></div><div><dt className="text-xs text-slate-500">Submitted</dt><dd>{date(account.created_at)}</dd></div></dl>
       {account.details.position && <p className="mt-3 text-sm text-slate-600">Position: {account.details.position}</p>}
       {account.details.registrationSource === 'teacher' && <p className="mt-3 text-sm font-medium text-brand-700">Submitted by teacher: {account.details.submittedByName}</p>}
       {account.role === 'student' && account.details.birthdate && <p className="mt-3 text-sm text-slate-600">Birthdate: {account.details.birthdate} · Sex: {account.details.sex}</p>}
@@ -76,7 +77,7 @@ export default function AdminPortal({ view }) {
     </>}
     <Modal open={!!selected} onClose={() => !saving && setSelected(null)} title={decision === 'approved' ? 'Verify and approve account' : 'Decline registration'}>
       {selected && <form onSubmit={submit} className="space-y-5"><p className="text-sm"><strong>{selected.name}</strong> · {selected.role}<br/>{selected.email}</p>
-        {decision === 'approved' && <><Select id="review-class" label={selected.role === 'teacher' ? 'Assign teaching section' : 'Confirm enrollment section'} required value={classId} onChange={event => { setClassId(event.target.value); setSubjectIds([]); }} placeholder="Choose a class" options={data.classes.map(cls => ({ value: cls.id, label: `${cls.grade_level} – ${cls.section} (${cls.school_year_id})` }))}/>
+        {decision === 'approved' && <><Select id="review-class" label={selected.role === 'teacher' ? 'Assign teaching section' : 'Confirm enrollment section'} required value={classId} onChange={event => { setClassId(event.target.value); setSubjectIds([]); }} placeholder="Choose a class" options={data.classes.map(cls => ({ value: cls.id, label: `${formatClassLabel(cls.grade_level, cls.section)} (${cls.school_year_id})` }))}/>
           {selected.role === 'teacher' && <fieldset><legend className="mb-2 text-sm font-semibold">Assign subjects</legend><p className="mb-3 text-xs text-slate-500">Already assigned subjects are unavailable.</p><div className="grid gap-2 sm:grid-cols-2">{data.subjects.map(subject => {
             const assigned = data.assignments.some(a => a.class_id === classId && a.subject_id === subject.id && data.accounts.some(account => account.linked_id === a.teacher_id && account.role === 'teacher' && account.status === 'approved'));
             return <label key={subject.id} className={`flex items-center gap-2 rounded-lg border p-2 text-sm ${assigned ? 'text-slate-400' : ''}`}><input type="checkbox" disabled={assigned} checked={subjectIds.includes(subject.id)} onChange={event => setSubjectIds(prev => event.target.checked ? [...prev, subject.id] : prev.filter(id => id !== subject.id))}/>{subject.name}</label>;

@@ -5,6 +5,11 @@ export function cn(...parts) {
   return parts.filter(Boolean).join(' ');
 }
 
+export function formatClassLabel(gradeLevel, section) {
+  const grade = String(gradeLevel).replace(/^Grade\s+/i, '');
+  return `${grade} - ${section}`;
+}
+
 /** DepEd passing mark. */
 const PASSING_GRADE = 75;
 

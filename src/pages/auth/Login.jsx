@@ -109,7 +109,7 @@ export default function Login() {
                 </div>
                 <div>
                   <p className="login-ticket-meta-label">Grade Level</p>
-                  <p className="login-ticket-meta-value">10 · Rizal</p>
+                  <p className="login-ticket-meta-value">10 - Archimedes</p>
                 </div>
               </div>
 

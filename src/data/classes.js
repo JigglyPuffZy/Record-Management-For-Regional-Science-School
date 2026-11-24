@@ -1,4 +1,5 @@
 // Populated from the authorized records API after sign-in.
+import { formatClassLabel } from '../lib/utils.js';
 let CLASSES = [];
 
 export let TEACHING_ASSIGNMENTS = [];
@@ -13,7 +14,7 @@ export function getClassById(classId) {
 
 export function getClassLabel(classId) {
   const c = getClassById(classId);
-  return c ? `${c.gradeLevel} - ${c.section}` : classId;
+  return c ? formatClassLabel(c.gradeLevel, c.section) : classId;
 }
 
 export function getAssignmentsForTeacher(teacherId) {
