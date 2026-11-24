@@ -3,7 +3,7 @@
  * Written Works (WW), Performance Tasks (PT), Examinations (EX).
  */
 
-export const DEFAULT_GRADE_COMPONENTS = {
+const DEFAULT_GRADE_COMPONENTS = {
   ww: 0.2,
   pt: 0.5,
   ex: 0.3,
@@ -18,7 +18,7 @@ const MAPEH_STYLE = {
 };
 
 /** @type {Record<string, { ww: number, pt: number, ex: number, label: string }>} */
-export const GRADE_COMPONENTS_BY_SUBJECT_ID = {
+const GRADE_COMPONENTS_BY_SUBJECT_ID = {
   FIL: DEFAULT_GRADE_COMPONENTS,
   ENG: DEFAULT_GRADE_COMPONENTS,
   MATH: DEFAULT_GRADE_COMPONENTS,

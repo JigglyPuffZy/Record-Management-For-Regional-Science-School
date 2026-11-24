@@ -1,9 +1,8 @@
-// Business-logic layer sitting between the UI and the "database".
+// Shared records cache and business logic for the authorized server APIs.
 
-import { SCHOOL, SCHOOL_YEARS, ACTIVE_SCHOOL_YEAR, GRADING_PERIODS } from '../data/schools.js';
+import { SCHOOL, ACTIVE_SCHOOL_YEAR } from '../data/schools.js';
 import { SUBJECTS, getSubjectById } from '../data/subjects.js';
 import {
-  CLASSES,
   TEACHING_ASSIGNMENTS,
   getClassById,
   getClassLabel,
@@ -12,8 +11,6 @@ import {
   getSubjectIdsForTeacherInClass,
   teacherOwnsClassSubject,
   getTeacherForClassSubject,
-  findClassByGradeAndSection,
-  getSectionsForGradeLevel,
   setClassesCache,
 } from '../data/classes.js';
 import {
@@ -38,9 +35,8 @@ import { getDescriptorForGradeLevel } from '../lib/grading.js';
 let grades = [];
 const listeners = new Set();
 let hydration;
-let hydrated = false;
 let generation = 0;
-function persist() { listeners.forEach(fn => fn()); }
+function notifyGradeListeners() { listeners.forEach(fn => fn()); }
 
 export function hydrateRecords() {
   if (hydration) return hydration;
@@ -51,22 +47,16 @@ export function hydrateRecords() {
     setTeachersCache(teachers);
     setStudentsCache(students);
     grades = dbGrades;
-    hydrated = true;
-    persist();
+    notifyGradeListeners();
   }).finally(() => { if (hydration === pending) hydration = undefined; });
   hydration = pending;
   return hydration;
-}
-
-export function isRecordsHydrated() {
-  return hydrated;
 }
 
 export function clearRecords() {
   generation += 1;
   hydration = undefined;
   grades = [];
-  hydrated = false;
   setStudentsCache([]);
   setClassesCache([], []);
   setTeachersCache([]);
@@ -80,16 +70,11 @@ export function subscribeToGrades(listener) {
 export function getSchool() {
   return SCHOOL;
 }
-export function getSchoolYears() {
-  return SCHOOL_YEARS;
-}
+
 export function getActiveSchoolYear() {
   return ACTIVE_SCHOOL_YEAR;
 }
-/** @deprecated Prefer getGradingPeriodsForClass(classId) */
-export function getGradingPeriods() {
-  return GRADING_PERIODS;
-}
+
 export function getGradingPeriodsForClass(classId) {
   const cls = getClassById(classId);
   return getGradingPeriodsForGradeLevel(cls?.gradeLevel ?? 'Grade 7');
@@ -97,20 +82,14 @@ export function getGradingPeriodsForClass(classId) {
 export function getSubjects() {
   return SUBJECTS;
 }
-export function getAllClasses() {
-  return CLASSES;
-}
+
 export {
   getClassById,
   getClassLabel,
   getSubjectById,
   getClassesForTeacher,
   getSubjectIdsForTeacherInClass,
-  teacherOwnsClassSubject,
-  getSectionsForGradeLevel,
-  findClassByGradeAndSection,
 };
-export { getDescriptorForGradeLevel, getGrade10Descriptor } from '../lib/grading.js';
 
 export function getStudent(studentId) {
   return getStudentById(studentId);
@@ -165,7 +144,7 @@ function enrichGradeRow(row) {
   };
 }
 
-export function getGradeRow(studentId, classId, subjectId, schoolYear = ACTIVE_SCHOOL_YEAR) {
+function getGradeRow(studentId, classId, subjectId, schoolYear = ACTIVE_SCHOOL_YEAR) {
   const row = findGradeRecord(studentId, classId, subjectId, schoolYear) ?? blankRow(studentId, classId, subjectId, schoolYear);
   return enrichGradeRow(row);
 }
@@ -188,7 +167,6 @@ export function getCurrentYearGrades(studentId, schoolYear = ACTIVE_SCHOOL_YEAR)
   const student = getStudentById(studentId);
   if (!student) return [];
   const assignedSubjects = getSubjectIdsForClass(student.classId);
-  const gradeLevel = getClassById(student.classId)?.gradeLevel ?? 'Grade 7';
 
   return assignedSubjects.map((subjectId) => {
     const row = getGradeRow(studentId, student.classId, subjectId, schoolYear);
@@ -218,7 +196,7 @@ export function getGeneralAverage(studentId, schoolYear = ACTIVE_SCHOOL_YEAR) {
   return computeAverage(rows.map((r) => r.finalGrade));
 }
 
-export function getSubjectCount(studentId, schoolYear = ACTIVE_SCHOOL_YEAR) {
+function getSubjectCount(studentId, schoolYear = ACTIVE_SCHOOL_YEAR) {
   return getCurrentYearGrades(studentId, schoolYear).length;
 }
 
@@ -309,7 +287,7 @@ export async function saveGrade({ teacherId, studentId, classId, subjectId, scho
     value: cleared ? null : Number(value),
   });
   applyGradeToCache(saved);
-  persist();
+  notifyGradeListeners();
   return enrichGradeRow(saved);
 }
 

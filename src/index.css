@@ -96,10 +96,6 @@
     @apply rounded-2xl border border-slate-200/90 bg-white shadow-sm;
   }
 
-  .surface-card-elevated {
-    @apply rounded-2xl border border-slate-200 bg-white shadow-md shadow-slate-900/[0.04];
-  }
-
   .bento-tile {
     @apply rounded-2xl border border-slate-200/90 bg-white p-5 shadow-sm transition-all duration-200 hover:border-slate-300 hover:shadow-md sm:p-6;
   }
@@ -438,9 +434,6 @@
     @apply flex w-full items-center gap-3 px-5 py-3.5 text-left transition-colors hover:bg-slate-100/80 sm:px-6;
   }
 
-  .cr-guide-toggle-icon {
-    @apply flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white text-brand-700 shadow-sm ring-1 ring-slate-200/80;
-  }
 
   .cr-guide-toggle-title {
     @apply block text-sm font-bold text-slate-900;
@@ -683,10 +676,6 @@
     }
   }
 
-  .login-step-enter {
-    animation: login-step 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
-  }
-
   /* ── Login: school pass ticket ── */
   .login-ticket-page {
     @apply relative flex min-h-screen items-center justify-center px-4 py-10;
@@ -884,19 +873,10 @@
     }
   }
 
-  .input-field {
-    @apply h-11 w-full rounded-xl border border-slate-200 bg-white px-4 text-sm text-slate-900 placeholder:text-slate-400 transition-colors;
-    @apply focus:border-brand-600 focus:outline-none focus:ring-2 focus:ring-brand-600/15;
-  }
 }
 
 @keyframes page-enter {
   from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes login-step {
-  from { opacity: 0; transform: translateY(12px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
@@ -907,7 +887,6 @@
 
 @media (prefers-reduced-motion: reduce) {
   .page-enter,
-  .login-step-enter,
   .login-ticket-enter {
     animation: none;
   }

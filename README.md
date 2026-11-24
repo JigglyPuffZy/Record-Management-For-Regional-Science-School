@@ -21,17 +21,19 @@ APP_SESSION_SECRET=your-long-random-server-only-secret
 
 `APP_SESSION_SECRET` is recommended; the service-role key is used for signing when it is absent. Neither server secret may use a `VITE_` prefix. Production requires these variables on Vercel, HTTPS, and same-origin API requests.
 
-## Database upgrade
+## Database connection
 
-Run **only** `supabase/account_approvals.sql` in the Supabase SQL Editor. It is a standalone setup/upgrade that creates missing base tables, enum types, grading triggers, school-year/subject reference records, and private registration accounts before adding approval functions. It preserves existing students, teachers, passwords, grades, and class records. Do not rerun `full_schema.sql` or `cleanup_single_teacher.sql` as a repair: those legacy scripts reset data.
+Database provisioning is managed separately in Supabase. Connect this application to an existing school database; setup SQL and migration commands are not included in this repository.
 
-If no administrator exists, setup creates `T-ADMIN` with a random temporary password and returns it in the final SQL Results (`admin_id`, `email`, `temporary_password`). Save that result securely and use the **Admin** sign-in tab. Empty results mean no administrator credentials were created or changed. Existing credentials remain valid. A new school starts with Grade 10 Rizal and school contact/ID fields marked unconfigured; update those reference details with the school's actual information. If a teachers table exists in another schema, the script stops instead of creating parallel records.
+The connected project must provide:
 
-Confirm you are using the same Supabase project as the app's environment URL. The historical SQL generator and cleanup script are legacy tools and are not required by this setup.
+- `app_accounts` for account roles, hashed passwords, pending/approved/rejected status, and review history.
+- School, school-year, subject, curriculum, class, teacher, student, teaching-assignment, and grade-record tables.
+- A server-only `review_registration` function that approves or rejects pending registrations and creates the corresponding teacher/student records in one transaction.
+- Grade-record triggers that compute final ratings for three Grade 10 terms or four terms for Grades 7–9.
+- Restricted database permissions: account and academic records are accessed through the server APIs.
 
-`npm run db:approvals` can apply the migration only if the project already exposes a service-role-only `exec_sql` RPC. Otherwise use the SQL Editor. Apply the migration before publishing the matching application code, and sign in again after deployment.
-
-The existing `T-ADMIN` account becomes **Admin** and keeps its current credentials. It must use the Admin sign-in tab. Existing teacher/student accounts are retained as approved accounts. Legacy passwords are converted to salted scrypt hashes and removed from profile tables on the first successful sign-in. New passwords are hashed immediately. Public registration cannot create administrator accounts.
+Run `npm run db:check` to check the configured connection and table permissions. The URL and service-role key must belong to the same project. Account provisioning and password changes are handled by the database administrator.
 
 ## Account approval workflow
 
@@ -50,7 +52,6 @@ The existing `T-ADMIN` account becomes **Admin** and keeps its current credentia
 - `api/records.js`: authorized records and dynamic teacher/class metadata.
 - `api/save-grade.js`: teacher-only saves with assignment, roster, active-year, and grading-period checks. The server sets the editor identity.
 - `api/_lib/access.js`: hashed passwords, signed eight-hour HttpOnly/SameSite cookies, and server authorization. Browser role flags are ignored.
-- `supabase/account_approvals.sql`: private account table, migration, and transactional approval with review history. The class row is locked during approval to prevent conflicting teacher assignments.
 - `src/services/academicRecords.js`: shared authorized cache consumed by dashboards, class records, and SF10. Grades persist through the API; detailed assessment score drafts remain in browser localStorage.
 - Grade 10 uses three grading periods; Grades 7–9 use four. The existing grading weights and transmutation table are retained.
 
@@ -65,6 +66,16 @@ npm test
 npm run build
 ```
 
-HTTP handler tests use an in-memory adapter. SQL setup tests execute the actual migration and approval function in an isolated PGlite PostgreSQL instance, with Supabase roles/auth schema stubbed locally. They verify fresh setup, approval/rejection, grade recomputation, permission restrictions, preservation on rerun, and wrong-schema detection. No tests touch the live database.
+The tests cover authentication and authorization, registration validation, grade permissions, assessment calculations, and draft storage. HTTP handlers use an in-memory database adapter. The tests do not connect to the live database or validate its schema and stored procedures.
 
 For visual QA with synthetic accounts only, run `node tests/preview-ui.mjs` after a build and open http://127.0.0.1:4174/admin/dashboard. This isolated preview cannot approve accounts and never connects to Supabase.
+
+## Maintained project files
+
+- `src/`: the application routes, UI, grading calculations, and authorized records cache. Data comes from the server APIs.
+- `api/`: server authentication, registration review, records access, and grade writes.
+- `scripts/`: local API middleware, the database connection check, and the school-logo processing utility.
+- `tests/`: authentication and grading tests, plus the isolated visual preview. Use `--teacher` to preview teacher screens and `--port=4176` to select a different preview port.
+- `public/`: the transparent school logo, favicon, and 4K branding export.
+
+Local environment files and deployment configuration stay outside version control. Build output (`dist/`) is generated with `npm run build`.

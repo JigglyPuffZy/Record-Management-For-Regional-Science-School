@@ -1,7 +1,5 @@
-import { ACTIVE_SCHOOL_YEAR } from './schools.js';
-
 // Populated from the authorized records API after sign-in.
-export let CLASSES = [];
+let CLASSES = [];
 
 export let TEACHING_ASSIGNMENTS = [];
 export function setClassesCache(classes, assignments) {
@@ -16,16 +14,6 @@ export function getClassById(classId) {
 export function getClassLabel(classId) {
   const c = getClassById(classId);
   return c ? `${c.gradeLevel} - ${c.section}` : classId;
-}
-
-export function findClassByGradeAndSection(gradeLevel, section, schoolYear = ACTIVE_SCHOOL_YEAR) {
-  return CLASSES.find(
-    (c) => c.gradeLevel === gradeLevel && c.section === section && c.schoolYear === schoolYear,
-  ) ?? null;
-}
-
-export function getSectionsForGradeLevel(gradeLevel, schoolYear = ACTIVE_SCHOOL_YEAR) {
-  return CLASSES.filter((c) => c.gradeLevel === gradeLevel && c.schoolYear === schoolYear);
 }
 
 export function getAssignmentsForTeacher(teacherId) {

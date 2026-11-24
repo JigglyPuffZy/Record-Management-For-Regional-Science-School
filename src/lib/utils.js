@@ -6,7 +6,7 @@ export function cn(...parts) {
 }
 
 /** DepEd passing mark. */
-export const PASSING_GRADE = 75;
+const PASSING_GRADE = 75;
 
 /** True if `value` is a valid DepEd numeric grade (0-100, allows one decimal). */
 export function isValidGrade(value) {
@@ -51,13 +51,8 @@ export function getRemarks(finalGrade) {
   return findGradeBand(finalGrade)?.remarks ?? (Number(finalGrade) >= PASSING_GRADE ? 'Passed' : 'Failed');
 }
 
-/** Convenience: both descriptor and remarks in one call. */
-export function getGradeEvaluation(grade) {
-  return { descriptor: getGradeDescriptor(grade), remarks: getRemarks(grade) };
-}
-
 /** Rounds to the nearest whole number, DepEd style (no decimals on report cards). */
-export function roundGrade(value) {
+function roundGrade(value) {
   return Math.round(value);
 }
 
@@ -67,13 +62,6 @@ export function computeAverage(values) {
   if (nums.length === 0) return null;
   const sum = nums.reduce((a, b) => a + b, 0);
   return roundGrade(sum / nums.length);
-}
-
-/** Computes the Final Grade from four terms; null unless all four terms are present. */
-export function computeFinalGrade(q1, q2, q3, q4) {
-  const quarters = [q1, q2, q3, q4];
-  if (quarters.some((q) => q === null || q === undefined || q === '')) return null;
-  return computeAverage(quarters);
 }
 
 export function formatDate(isoDate) {

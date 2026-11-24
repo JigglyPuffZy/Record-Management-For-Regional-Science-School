@@ -5,7 +5,7 @@ import AcademicHistory from './AcademicHistory.jsx';
 import AppLogo from '../ui/AppLogo.jsx';
 
 function DescriptorCell({ gradeLevel, finalGrade }) {
-  const { descriptor, filipinoDescriptor, remarks } = getDescriptorForGradeLevel(gradeLevel, finalGrade);
+  const { descriptor, filipinoDescriptor } = getDescriptorForGradeLevel(gradeLevel, finalGrade);
   if (!descriptor) return <span className="text-slate-400">—</span>;
   if (filipinoDescriptor) {
     return (

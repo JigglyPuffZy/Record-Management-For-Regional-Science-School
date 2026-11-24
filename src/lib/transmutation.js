@@ -6,7 +6,7 @@
 export const TRANSMUTATION_SCHOOL_YEAR = '2026–2027';
 
 /** @type {{ min: number, max: number, transmuted: number }[]} */
-export const TRANSMUTATION_TABLE_SY_2026_2027 = [
+const TRANSMUTATION_TABLE_SY_2026_2027 = [
   { min: 99.5, max: 100, transmuted: 100 },
   { min: 98.32, max: 99.49, transmuted: 99 },
   { min: 97.14, max: 98.31, transmuted: 98 },
@@ -62,8 +62,4 @@ export function transmuteInitialGrade(initialGrade) {
   );
 
   return band?.transmuted ?? null;
-}
-
-export function isInitialGradeInTransmutationTable(initialGrade) {
-  return transmuteInitialGrade(initialGrade) !== null;
 }

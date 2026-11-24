@@ -35,7 +35,7 @@ export function saveSheetScores(key, scoresByStudent) {
   }
 }
 
-export const SCORE_CATEGORIES = ['ww', 'pt', 'qa'];
+const SCORE_CATEGORIES = ['ww', 'pt', 'qa'];
 export const isBlankScore = value => value === null || value === undefined || String(value).trim() === '';
 
 export function loadSheetTotalPoints(key, legacyScores = {}) {
@@ -55,11 +55,11 @@ export function saveSheetTotalPoints(key, totals) {
   catch { /* ignore quota errors */ }
 }
 
-export function isValidTotalPoints(value) {
+function isValidTotalPoints(value) {
   return !isBlankScore(value) && Number.isFinite(Number(value)) && Number(value) > 0;
 }
 
-export function isValidAssessmentScore(value, total) {
+function isValidAssessmentScore(value, total) {
   if (isBlankScore(value)) return true;
   return isValidTotalPoints(total) && Number.isFinite(Number(value)) && Number(value) >= 0 && Number(value) <= Number(total);
 }

@@ -20,7 +20,7 @@ function findGrade10Band(grade) {
  * Grade 10 descriptor from a numerical final rating.
  * @returns {{ level: string, filipinoDescriptor: string }}
  */
-export function getGrade10Descriptor(grade) {
+function getGrade10Descriptor(grade) {
   if (grade === null || grade === undefined || grade === '') {
     return { level: '', filipinoDescriptor: '' };
   }
@@ -47,12 +47,4 @@ export function getDescriptorForGradeLevel(gradeLevel, grade) {
     remarks: getRemarks(grade),
     level: getGradeDescriptor(grade),
   };
-}
-
-/** Formats descriptor for table cells — includes Filipino label for Grade 10. */
-export function formatDescriptorDisplay(gradeLevel, grade) {
-  const { descriptor, filipinoDescriptor } = getDescriptorForGradeLevel(gradeLevel, grade);
-  if (!descriptor) return '';
-  if (filipinoDescriptor) return `${descriptor} (${filipinoDescriptor})`;
-  return descriptor;
 }
