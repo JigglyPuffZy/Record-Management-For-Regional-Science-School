@@ -5,7 +5,7 @@ export const SCHOOL = {
   schoolId: '301234',
   district: 'Quezon City District IV',
   address: 'Brgy. San Isidro, Quezon City, Metro Manila',
-  division: 'Schools Division Office – Quezon City',
+  division: 'SDO Isabela',
   region: 'National Capital Region (NCR)',
 };
 
