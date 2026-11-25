@@ -5,6 +5,7 @@ import { useAuth } from '../context/AuthContext.jsx';
 import { dashboardFor } from '../lib/api.js';
 import Register from '../pages/auth/Register.jsx';
 import AdminPortal from '../pages/admin/AdminPortal.jsx';
+import AcademicSetup from '../pages/admin/AcademicSetup.jsx';
 
 import Login from '../pages/auth/Login.jsx';
 
@@ -42,6 +43,7 @@ export default function AppRoutes() {
           <Route path="/admin/dashboard" element={<AdminPortal view="dashboard" />} />
           <Route path="/admin/registrations" element={<AdminPortal view="registrations" />} />
           <Route path="/admin/accounts" element={<AdminPortal view="accounts" />} />
+          <Route path="/admin/academic-setup" element={<AcademicSetup />} />
         </Route>
       </Route>
 

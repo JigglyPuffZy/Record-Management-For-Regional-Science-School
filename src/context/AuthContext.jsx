@@ -8,6 +8,8 @@ export function AuthProvider({ children }) {
   const [initializing, setInitializing] = useState(true);
   const [dataReady, setDataReady] = useState(false);
   const [loadError, setLoadError] = useState('');
+  const [recordsVersion, setRecordsVersion] = useState(0);
+  const [syncError, setSyncError] = useState('');
   const loadData = useCallback(async (account) => {
     setLoadError('');
     setDataReady(false);
@@ -25,6 +27,27 @@ export function AuthProvider({ children }) {
       if (err.status !== 401 && err.status !== 403) setLoadError(err.message);
     }).finally(() => setInitializing(false));
   }, [loadData]);
+  useEffect(() => {
+    if (!user || user.role === 'admin' || !dataReady) return;
+    let disposed = false;
+    const refresh = async () => {
+      if (document.visibilityState === 'hidden') return;
+      try {
+        await hydrateRecords();
+        if (!disposed) { setSyncError(''); setRecordsVersion(value => value + 1); }
+      } catch (err) {
+        if (!disposed) setSyncError(err.message);
+      }
+    };
+    const timer = window.setInterval(refresh, 15000);
+    window.addEventListener('focus', refresh);
+    document.addEventListener('visibilitychange', refresh);
+    return () => {
+      disposed = true; window.clearInterval(timer);
+      window.removeEventListener('focus', refresh);
+      document.removeEventListener('visibilitychange', refresh);
+    };
+  }, [user, dataReady]);
   const login = useCallback(async (credentials) => {
     try {
       const { user: account } = await apiPost('/api/access', { action: 'login', ...credentials });
@@ -42,7 +65,7 @@ export function AuthProvider({ children }) {
     setLoadError('');
   }, []);
   const reloadData = useCallback(() => user && loadData(user), [user, loadData]);
-  const value = useMemo(() => ({ user, initializing, dataReady, loadError, login, logout, reloadData }), [user, initializing, dataReady, loadError, login, logout, reloadData]);
+  const value = useMemo(() => ({ user, initializing, dataReady, loadError, login, logout, reloadData, recordsVersion, syncError }), [user, initializing, dataReady, loadError, login, logout, reloadData, recordsVersion, syncError]);
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 export function useAuth() {

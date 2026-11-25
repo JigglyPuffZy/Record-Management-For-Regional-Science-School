@@ -5,6 +5,7 @@ import { createHandler as access } from '../api/access.js';
 import { createHandler as admin } from '../api/admin.js';
 import { createHandler as records } from '../api/records.js';
 import { createHandler as grades } from '../api/save-grade.js';
+import { createHandler as workflows } from '../api/academic-workflows.js';
 
 process.env.APP_SESSION_SECRET = 'local-test-secret-never-used-in-production';
 const password = 'SchoolTest!2468';
@@ -25,6 +26,7 @@ function database(tables = {}, rpcResult = { error: null }) {
         insert(value) { payload = value; operation = 'insert'; return this; },
         update(value) { payload = value; operation = 'update'; return this; },
         upsert(value) { payload = value; operation = 'upsert'; return this; },
+        delete() { operation = 'delete'; return this; },
         single() { single = true; return this; },
         maybeSingle() { single = true; return this; },
         then(resolve, reject) {
@@ -37,6 +39,7 @@ function database(tables = {}, rpcResult = { error: null }) {
               tables[table].push({ id: 'new-id', ...payload }); rows = [tables[table].at(-1)];
             }
             if (operation === 'update') rows.forEach(row => Object.assign(row, payload));
+            if (operation === 'delete') tables[table] = tables[table].filter(row => !rows.includes(row));
             if (operation === 'upsert') { tables[table].push(payload); rows = [payload]; }
             const projected = projection === '*' ? rows : rows.map(row => Object.fromEntries(Object.entries(row).filter(([key]) => projection.split(',').map(x => x.trim()).includes(key))));
             return Promise.resolve({ data: single ? projected[0] || null : projected, error: null }).then(resolve, reject);
@@ -173,4 +176,50 @@ test('teacher grade writes enforce assignment, enrollment, active year, and vali
 test('cross-origin mutation requests are rejected before database access', async () => {
   const result = await request(admin, database(), {}, null, { headers: { host: 'school.example', origin: 'https://attacker.example' } });
   assert.equal(result.statusCode, 403);
+});
+
+test('academic workflows deny student writes and teacher administrative actions before invoking SQL', async () => {
+  for (const [role, action] of [['student', 'eligibility'], ['teacher', 'advance'], ['teacher', 'assignment'], ['teacher', 'options'], ['admin', 'correct-history']]) {
+    const db = database({ app_accounts: [account(role)] });
+    assert.equal((await request(workflows, db, { action, reason: 'verified' }, role)).statusCode, 403);
+    assert.equal(db.calls.some(call => call.name === 'sf10_workflow'), false);
+  }
+});
+
+test('academic workflow identity comes from the signed session and missing migration has a specific message', async () => {
+  const body = { action: 'eligibility', studentId: 'S1', details: { eligible: true }, reason: 'Verified Grade 6 record', actorId: 'forged' };
+  const db = database({ app_accounts: [account('teacher')] });
+  assert.equal((await request(workflows, db, body, 'teacher')).statusCode, 200);
+  const call = db.calls.find(item => item.name === 'sf10_workflow');
+  assert.equal(call.args.p_actor, 'teacher'); assert.equal(call.args.p_data.actorId, undefined);
+  const missing = database({ app_accounts: [account('teacher')] }, { error: { code: 'PGRST202' } });
+  const result = await request(workflows, missing, body, 'teacher');
+  assert.equal(result.statusCode, 503); assert.match(result.body.error, /SF10 workflow migration/);
+});
+
+test('history access stays scoped to the signed-in learner including archived grades and remedials', async () => {
+  const db = database({ app_accounts: [account('student')],
+    students: [{ student_id: 'S-1', class_id: 'C10' }, { student_id: 'S-2', class_id: 'OTHER' }],
+    grade_records: [{ student_id: 'S-1', class_id: 'C7' }, { student_id: 'S-2', class_id: 'OTHER' }],
+    classes: [{ id: 'C7' }, { id: 'C10' }, { id: 'OTHER' }],
+    academic_year_records: [{ id: 'Y1', student_id: 'S-1' }, { id: 'Y2', student_id: 'S-2' }],
+    academic_year_subject_grades: [{ academic_year_record_id: 'Y1' }, { academic_year_record_id: 'Y2' }],
+    remedial_classes: [{ academic_year_record_id: 'Y1' }, { academic_year_record_id: 'Y2' }],
+    student_eligibility: [{ student_id: 'S-1' }, { student_id: 'S-2' }],
+  });
+  const { body } = await request(records, db, {}, 'student');
+  assert.equal(body.archives.length, 1); assert.equal(body.archivedGrades.length, 1);
+  assert.equal(body.remedials.length, 1); assert.equal(body.eligibility.length, 1);
+  assert.deepEqual(body.classes.map(cls => cls.id).sort(), ['C10', 'C7']);
+});
+
+test('only administrators can delete teacher/student login accounts while preserving academic records', async () => {
+  const db = database({ app_accounts: [account('admin'), account('teacher'), account('student')], students: [{ student_id: 'S-1' }], grade_records: [{ student_id: 'S-1', quarter1: 90 }] });
+  assert.equal((await request(admin, db, { action: 'delete', accountId: 'student' }, 'teacher')).statusCode, 403);
+  assert.equal((await request(admin, db, { action: 'delete', accountId: 'admin' }, 'admin')).statusCode, 400);
+  assert.equal((await request(admin, db, { action: 'delete', accountId: 'unknown' }, 'admin')).statusCode, 404);
+  assert.equal((await request(admin, db, { action: 'delete', accountId: 'student' }, 'admin')).statusCode, 200);
+  assert.equal(db.tables.app_accounts.some(row => row.id === 'student'), false);
+  assert.equal(db.tables.students.length, 1); assert.equal(db.tables.grade_records[0].quarter1, 90);
+  assert.equal((await request(records, db, {}, 'student')).statusCode, 403);
 });

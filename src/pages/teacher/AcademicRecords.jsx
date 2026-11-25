@@ -6,13 +6,15 @@ import Input from '../../components/ui/Input.jsx';
 import Button from '../../components/ui/Button.jsx';
 import EmptyState from '../../components/ui/EmptyState.jsx';
 import SF10View from '../../components/sf10/SF10View.jsx';
+import RecordEditor from '../../components/sf10/RecordEditor.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
-import { getStudentsForTeacher, getClassLabel, getSF10 } from '../../services/academicRecords.js';
+import { getStudentsForTeacher, getClassLabel, getSF10, getSubjectIdsForTeacherInClass } from '../../services/academicRecords.js';
 import { cn } from '../../lib/utils.js';
 
 export default function TeacherAcademicRecords() {
   const { user } = useAuth();
   const [query, setQuery] = useState('');
+  const [, refresh] = useState(0);
   const students = getStudentsForTeacher(user.id);
   const [selectedId, setSelectedId] = useState(students[0]?.studentId ?? null);
 
@@ -23,6 +25,10 @@ export default function TeacherAcademicRecords() {
   }, [students, query]);
 
   const sf10 = selectedId ? getSF10(selectedId) : null;
+  const selectedClassId = students.find((student) => student.studentId === selectedId)?.classId;
+  const editableSubjectIds = selectedClassId && sf10?.currentYear?.isCurrent
+    ? getSubjectIdsForTeacherInClass(user.id, selectedClassId)
+    : [];
 
   return (
     <PageContainer title="Academic Records" icon={GraduationCap} description="View the SF10 record of any student assigned to you.">
@@ -58,12 +64,19 @@ export default function TeacherAcademicRecords() {
         <div>
           {sf10 ? (
             <>
-              <div className="no-print mb-4 flex justify-end">
+              <div className="no-print mb-4 flex flex-wrap justify-end gap-2">
+                <RecordEditor key={selectedId} sf10={sf10} studentId={selectedId} teacherId={user.id} classId={selectedClassId} onSaved={() => refresh(value => value + 1)}/>
                 <Button icon={Printer} onClick={() => window.print()}>
                   Print SF10
                 </Button>
               </div>
-              <SF10View sf10={sf10} />
+              <SF10View
+                sf10={sf10}
+                studentId={selectedId}
+                teacherId={user.id}
+                editableSubjectIds={editableSubjectIds}
+                onSaved={() => refresh((value) => value + 1)}
+              />
             </>
           ) : (
             <Card>

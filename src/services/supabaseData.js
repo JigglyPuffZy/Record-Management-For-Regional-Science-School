@@ -3,6 +3,8 @@ import { apiPost } from '../lib/api.js';
 export async function hydrateAllFromDb() {
   const data = await apiPost('/api/records');
   return {
+    archives: data.archives || [], archivedGrades: data.archivedGrades || [], remedials: data.remedials || [],
+    eligibility: data.eligibility || [], schoolYears: data.schoolYears || [], workflowsReady: data.workflowsReady,
     classes: data.classes.map(row => ({ id: row.id, gradeLevel: row.grade_level, section: row.section, schoolYear: row.school_year_id, adviserId: row.adviser_teacher_id })),
     assignments: data.assignments.map(row => ({ teacherId: row.teacher_id, classId: row.class_id, subjectId: row.subject_id })),
     teachers: data.teachers.map(row => ({ teacherId: row.teacher_id, name: row.name, email: row.email, position: row.position })),

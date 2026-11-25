@@ -32,6 +32,7 @@ The connected project must provide:
 - A server-only `review_registration` function that approves or rejects pending registrations and creates the corresponding teacher/student records in one transaction.
 - Grade-record triggers that compute final ratings for three Grade 10 terms or four terms for Grades 7–9.
 - Restricted database permissions: account and academic records are accessed through the server APIs.
+- `student_eligibility`, `academic_record_audit`, and the server-only `sf10_workflow(uuid,text,jsonb)` function for saved eligibility, prior records/corrections, class setup, teaching assignments, and enrollment progression. Install the separately supplied SF10 workflow migration before using these controls; SQL remains outside this repository.
 
 Run `npm run db:check` to check the configured connection and table permissions. The URL and service-role key must belong to the same project. Account provisioning and password changes are handled by the database administrator.
 
@@ -54,6 +55,18 @@ Run `npm run db:check` to check the configured connection and table permissions.
 - `api/_lib/access.js`: hashed passwords, signed eight-hour HttpOnly/SameSite cookies, and server authorization. Browser role flags are ignored.
 - `src/services/academicRecords.js`: shared authorized cache consumed by dashboards, class records, and SF10. Grades persist through the API; detailed assessment score drafts remain in browser localStorage.
 - Grade 10 uses three grading periods; Grades 7–9 use four. The existing grading weights and transmutation table are retained.
+
+## SF10 and school-year workflows
+
+Teachers can enter current-year term grades directly in **Teacher → SF10**, limited to their assigned subjects. Eligibility details are saved per learner. **Add prior record** copies verified Grade 7–9 grades from existing records; **Correct prior grades** recalculates the rating and remarks and requires a recorded reason. Student views remain read-only. Open portals refresh saved records every 15 seconds and when the window regains focus; a failed refresh displays a retry notice without discarding the current view.
+
+In **Admin → Academics**, prepare a year and its sections, assign approved teachers (including Research), then confirm promotion, retention, or Grade 10 graduation for selected learners. The server requires complete grades and preserves the old year before changing enrollment in one transaction. Promotion follows Grade 7 → 8 → 9 → 10. Staff verify the outcome; the app does not decide a learner’s eligibility for promotion. Activate the next year after all active learners have their enrollment decisions recorded. Graduated learners keep their records.
+
+Administrators can delete teacher/student login accounts through a confirmation dialog. Academic profiles and grades are retained; administrator accounts cannot be deleted from this screen. School ID is **300610**, division **SDO Isabela**. Unconfirmed district and address fields are blank.
+
+Grades 7–9 have 14 Written Works and 14 Performance Tasks slots; Grade 10 keeps 10 each. All have three examination slots. Existing score drafts and total points are preserved when the new columns are added.
+
+The subject catalog includes Filipino, English, Mathematics, Science, Araling Panlipunan (AP), Values Education, TLE, and MAPEH, alongside Research and existing legacy subjects. Assign the subject to an approved teacher/class before entering its grades. Values Education has its own ID, preserving earlier ESP records.
 
 ## Assessment total points
 

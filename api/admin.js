@@ -17,6 +17,16 @@ export function createHandler(getDatabase = database) {
         results.forEach(result => check(result.error));
         return res.status(200).json({ accounts: results[0].data, classes: results[1].data, subjects: results[2].data, assignments: results[3].data });
       }
+      if (body.action === 'delete') {
+        if (!body.accountId || body.accountId === admin.id) throw new HttpError(400, 'Choose an account to delete.');
+        const { data: target, error: targetError } = await db.from('app_accounts').select('role').eq('id', body.accountId).maybeSingle();
+        check(targetError);
+        if (!target) throw new HttpError(404, 'Account not found.');
+        if (target.role === 'admin') throw new HttpError(400, 'Administrator accounts cannot be deleted.');
+        const { error } = await db.from('app_accounts').delete().eq('id', body.accountId);
+        check(error);
+        return res.status(200).json({ ok: true });
+      }
       if (body.action !== 'review' || !['approved', 'rejected'].includes(body.decision)) throw new HttpError(400, 'Choose an approval decision.');
       if (!body.accountId || body.accountId === admin.id) throw new HttpError(400, 'Choose a pending registration.');
       const note = typeof body.note === 'string' ? body.note.trim().slice(0, 1500) : '';

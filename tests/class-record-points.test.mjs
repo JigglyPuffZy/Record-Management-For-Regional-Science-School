@@ -4,6 +4,7 @@ import {
   createEmptyScoreSet, categoryPercentage, computeInitialGrade,
   collectInvalidScoreCells, loadSheetTotalPoints, saveSheetTotalPoints,
   sheetStorageKey, saveSheetScores, loadSheetScores,
+  getAssessmentCounts, normalizeScoreSet,
 } from '../src/lib/classRecordSheet.js';
 import { transmuteInitialGrade } from '../src/lib/transmutation.js';
 
@@ -12,6 +13,20 @@ function filled(values) {
   for (const [category, entries] of Object.entries(values)) entries.forEach((value, index) => { result[category][index] = String(value); });
   return result;
 }
+
+test('Grades 7–9 get four extra WW/PT columns, and all grades get a third examination', () => {
+  for (const grade of ['Grade 7', 'Grade 8', 'Grade 9']) {
+    assert.deepEqual(getAssessmentCounts(grade), { ww: 14, pt: 14, qa: 3 });
+    const scores = normalizeScoreSet({ ww: ['8'], pt: ['9'], qa: ['10', '11'] }, grade);
+    assert.equal(scores.ww.length, 14); assert.equal(scores.pt.length, 14);
+    assert.deepEqual(scores.qa, ['10', '11', '']);
+    assert.equal(scores.ww[0], '8'); assert.equal(scores.ww[13], '');
+    const totals = createEmptyScoreSet(grade);
+    scores.ww[13] = '10'; totals.ww[0] = '10'; totals.ww[13] = '20';
+    assert.equal(categoryPercentage(scores.ww, totals.ww), 60);
+  }
+  assert.deepEqual(getAssessmentCounts('Grade 10'), { ww: 10, pt: 10, qa: 3 });
+});
 
 test('raw score / total points flows through weighting and the existing SF10 transmutation', () => {
   const scores = filled({ ww: [8], pt: [45], qa: [30] });

@@ -9,7 +9,7 @@ const admin = { id: 'admin-preview', accountId: 'admin-preview', role: 'admin', 
 const teacher = { id: 'T-PREVIEW', accountId: 'teacher-preview', role: 'teacher', name: 'Sample Teacher', email: 'teacher@example.test' };
 const actor = process.argv.includes('--teacher') ? teacher : admin;
 const classes = [{ id: 'G10-ARCHIMEDES', grade_level: 'Grade 10', section: 'Archimedes', school_year_id: '2026-2027' }];
-const data = { classes, subjects: [{ id: 'MATH', name: 'Mathematics' }, { id: 'SCI', name: 'Science' }, { id: 'ENG', name: 'English' }], assignments: [], accounts: [
+const data = { classes, subjects: [{ id: 'MATH', name: 'Mathematics' }, { id: 'SCI', name: 'Science' }, { id: 'ENG', name: 'English' }, { id: 'RESEARCH', name: 'Research' }], assignments: [], accounts: [
   { id: 'teacher-preview', role: 'teacher', identifier: 't-preview', name: 'Sample Teacher', email: 'teacher@example.test', status: 'pending', details: { classId: 'G10-ARCHIMEDES', position: 'Teacher I', verification: 'Local preview example: Science department. Personnel office can verify employment.' }, created_at: '2026-11-20T02:00:00Z' },
   { id: 'student-preview', role: 'student', identifier: '123456789012', name: 'Sample Learner', email: 'learner@example.test', status: 'pending', details: { classId: 'G10-ARCHIMEDES', verification: 'Local preview example: Enrolled in 10 - Archimedes. Registrar can confirm enrollment.' }, created_at: '2026-11-20T03:00:00Z' },
 ] };
@@ -22,7 +22,11 @@ createServer(async (req, res) => {
       const body = JSON.parse(raw || '{}');
       res.setHeader('Content-Type', 'application/json');
       if (req.url === '/api/access') return res.end(JSON.stringify(['options', 'teacher-options'].includes(body.action) ? { classes } : { user: actor }));
-      if (req.url === '/api/records') return res.end(JSON.stringify({ students: learners, grades, classes: classes.map(cls => ({ ...cls, adviser_teacher_id: teacher.id })), teachers: [{ teacher_id: teacher.id, name: teacher.name, email: teacher.email, position: 'Teacher I' }], assignments: [{ teacher_id: teacher.id, class_id: 'G10-ARCHIMEDES', subject_id: 'MATH' }] }));
+      if (req.url === '/api/academic-workflows') {
+        if (body.action === 'options') return res.end(JSON.stringify({ years: [{ id: '2026-2027', label: '2026-2027', is_active: true }], classes, subjects: data.subjects, teachers: [{ linked_id: teacher.id, name: teacher.name }], students: learners, assignments: [] }));
+        res.statusCode = 400; return res.end(JSON.stringify({ error: 'Synthetic preview only. No academic workflows are submitted.' }));
+      }
+      if (req.url === '/api/records') return res.end(JSON.stringify({ archives: [{ id: 'ARCHIVE-9', student_id: 'S-PREVIEW-1', school_year_id: '2025-2026', grade_level: 'Grade 9', section: 'A', school_name: 'Regional Science High School', school_dep_id: '', district: '', division: 'SDO Isabela', region: 'Region II', adviser_name: 'Previous Adviser' }], archivedGrades: [{ academic_year_record_id: 'ARCHIVE-9', subject_id: 'MATH', subject_name: 'Mathematics', quarter1: 87, quarter2: 88, quarter3: 89, quarter4: 90, final_grade: 89 }], eligibility: [], schoolYears: [{ id: '2026-2027', is_active: true }], students: learners, grades, classes: classes.map(cls => ({ ...cls, adviser_teacher_id: teacher.id })), teachers: [{ teacher_id: teacher.id, name: teacher.name, email: teacher.email, position: 'Teacher I' }], assignments: [{ teacher_id: teacher.id, class_id: 'G10-ARCHIMEDES', subject_id: 'MATH' }] }));
       if (req.url === '/api/save-grade') {
         // Save only to this process's synthetic fixture; never to Supabase.
         const grade = grades.find(row => row.student_id === body.studentId);

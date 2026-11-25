@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ShieldCheck, Clock3, Users, GraduationCap, RefreshCw, Check, X } from 'lucide-react';
+import { ShieldCheck, Clock3, Users, GraduationCap, RefreshCw, Check, X, Trash2 } from 'lucide-react';
 import PageContainer from '../../components/layout/PageContainer.jsx';
 import { Card, CardBody, StatCard } from '../../components/ui/Card.jsx';
 import Button from '../../components/ui/Button.jsx';
@@ -8,6 +8,7 @@ import Select from '../../components/ui/Select.jsx';
 import Input from '../../components/ui/Input.jsx';
 import Badge from '../../components/ui/Badge.jsx';
 import Modal from '../../components/ui/Modal.jsx';
+import ConfirmDialog from '../../components/ui/ConfirmDialog.jsx';
 import { apiPost } from '../../lib/api.js';
 import { useToast } from '../../context/ToastContext.jsx';
 import { formatClassLabel } from '../../lib/utils.js';
@@ -29,6 +30,8 @@ export default function AdminPortal({ view }) {
   const [subjectIds, setSubjectIds] = useState([]);
   const [note, setNote] = useState('');
   const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(null);
+  const [deleteBusy, setDeleteBusy] = useState(false);
   const load = useCallback(async () => {
     setLoading(true); setError('');
     try { setData(await apiPost('/api/admin', { action: 'list' })); }
@@ -47,6 +50,14 @@ export default function AdminPortal({ view }) {
     } catch (err) { toast.error(err.message); }
     finally { setSaving(false); }
   }
+  async function confirmDelete() {
+    setDeleteBusy(true);
+    try {
+      await apiPost('/api/admin', { action: 'delete', accountId: deleting.id });
+      setDeleting(null); toast.success('Account deleted.'); await load();
+    } catch (err) { toast.error(err.message); }
+    finally { setDeleteBusy(false); }
+  }
   const pending = data.accounts.filter(a => a.status === 'pending');
   const approved = data.accounts.filter(a => a.status === 'approved' && a.role !== 'admin');
   const filtered = data.accounts.filter(account => account.role !== 'admin' && (role === 'all' || account.role === role) && (view === 'accounts' ? account.status === 'approved' : status === 'all' || account.status === status) && `${account.name} ${account.email} ${account.identifier}`.toLowerCase().includes(query.toLowerCase()));
@@ -61,7 +72,7 @@ export default function AdminPortal({ view }) {
       {account.details.registrationSource === 'teacher' && <p className="mt-3 text-sm font-medium text-brand-700">Submitted by teacher: {account.details.submittedByName}</p>}
       {account.role === 'student' && account.details.birthdate && <p className="mt-3 text-sm text-slate-600">Birthdate: {account.details.birthdate} · Sex: {account.details.sex}</p>}
       {account.details.verification && <div className="mt-4 rounded-xl bg-slate-50 p-3"><p className="text-xs font-semibold uppercase text-slate-500">Verification details</p><p className="mt-1 whitespace-pre-wrap break-words text-sm">{account.details.verification}</p></div>}
-      {account.status === 'pending' ? <div className="mt-4 flex flex-wrap gap-2"><Button icon={Check} onClick={() => review(account, 'approved')}>Review &amp; approve</Button><Button variant="secondary" icon={X} onClick={() => review(account, 'rejected')}>Decline</Button></div> : <div className="mt-4 border-t border-slate-100 pt-3 text-sm text-slate-600"><p className="whitespace-pre-wrap break-words">{account.review_note}</p>{account.reviewed_at && <p className="mt-1 text-xs">Reviewed {date(account.reviewed_at)} by {data.accounts.find(a => a.id === account.reviewed_by)?.name || 'Administrator'}</p>}{assignments.length > 0 && <p className="mt-2">Subjects: {assignments.map(a => data.subjects.find(s => s.id === a.subject_id)?.name || a.subject_id).join(', ')}</p>}</div>}
+      {account.status === 'pending' ? <div className="mt-4 flex flex-wrap gap-2"><Button icon={Check} onClick={() => review(account, 'approved')}>Review &amp; approve</Button><Button variant="secondary" icon={X} onClick={() => review(account, 'rejected')}>Decline</Button></div> : <div className="mt-4 border-t border-slate-100 pt-3 text-sm text-slate-600"><p className="whitespace-pre-wrap break-words">{account.review_note}</p>{account.reviewed_at && <p className="mt-1 text-xs">Reviewed {date(account.reviewed_at)} by {data.accounts.find(a => a.id === account.reviewed_by)?.name || 'Administrator'}</p>}{assignments.length > 0 && <p className="mt-2">Subjects: {assignments.map(a => data.subjects.find(s => s.id === a.subject_id)?.name || a.subject_id).join(', ')}</p>}<div className="mt-3"><Button variant="danger" size="sm" icon={Trash2} onClick={() => setDeleting(account)}>Delete account</Button></div></div>}
     </CardBody></Card>;
   }
   return <PageContainer title={titles[view]} icon={ShieldCheck} description="Verify school identities and control who can access learner records." actions={<Button variant="secondary" icon={RefreshCw} disabled={loading} onClick={load}>Refresh</Button>}>
@@ -88,5 +99,15 @@ export default function AdminPortal({ view }) {
         <div className="flex flex-wrap gap-2"><Button type="submit" variant={decision === 'approved' ? 'primary' : 'danger'} disabled={saving || (decision === 'approved' && selected.role === 'teacher' && !subjectIds.length)}>{saving ? 'Saving…' : decision === 'approved' ? 'Confirm approval' : 'Confirm decline'}</Button><Button variant="secondary" disabled={saving} onClick={() => setSelected(null)}>Cancel</Button></div>
       </form>}
     </Modal>
+    <ConfirmDialog
+      open={!!deleting}
+      onClose={() => !deleteBusy && setDeleting(null)}
+      onConfirm={confirmDelete}
+      loading={deleteBusy}
+      variant="danger"
+      title="Delete this account?"
+      confirmLabel="Delete account"
+      message={deleting ? `This permanently removes ${deleting.name}'s login (${deleting.role}). Their existing academic records are not affected, but they will need to register again to regain access.` : ''}
+    />
   </PageContainer>;
 }

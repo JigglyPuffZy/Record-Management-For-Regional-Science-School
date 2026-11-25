@@ -1,89 +1,28 @@
-import { Lock } from 'lucide-react';
-import { formatDate, formatGrade, getRemarks } from '../../lib/utils.js';
-import { getDescriptorForGradeLevel } from '../../lib/grading.js';
+import { Lock, Pencil } from 'lucide-react';
+import { formatDate } from '../../lib/utils.js';
+import GradeTable from './GradeTable.jsx';
 import AcademicHistory from './AcademicHistory.jsx';
 import AppLogo from '../ui/AppLogo.jsx';
 
-function DescriptorCell({ gradeLevel, finalGrade }) {
-  const { descriptor, filipinoDescriptor } = getDescriptorForGradeLevel(gradeLevel, finalGrade);
-  if (!descriptor) return <span className="text-slate-400">—</span>;
-  if (filipinoDescriptor) {
-    return (
-      <span>
-        {descriptor}
-        <br />
-        <span className="text-xs text-slate-500">({filipinoDescriptor})</span>
-      </span>
-    );
-  }
-  return <span>{descriptor}</span>;
-}
-
-function GradeTable({ gradeLevel, subjects, periods, finalLabel, generalAverage, scale }) {
-  const showRemarks = scale !== 'grade10';
-
-  return (
-    <div className="overflow-x-auto rounded-lg border border-slate-300">
-      <table className="w-full min-w-max text-left text-sm">
-        <thead className="bg-slate-100 text-xs font-semibold uppercase tracking-wide text-slate-600">
-          <tr>
-            <th className="px-4 py-2.5">Learning Area</th>
-            {periods.map((p) => (
-              <th key={p.id} className="px-3 py-2.5 text-right">{p.label}</th>
-            ))}
-            <th className="px-3 py-2.5 text-right">{finalLabel}</th>
-            <th className="px-4 py-2.5">Descriptor</th>
-            {showRemarks ? <th className="px-4 py-2.5">Remarks</th> : null}
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-slate-200 bg-white">
-          {subjects.map((s) => (
-            <tr key={s.subjectId}>
-              <td className="px-4 py-2 font-medium">{s.subjectName}</td>
-              {periods.map((p) => (
-                <td key={p.id} className="px-3 py-2 text-right tabular-nums">{formatGrade(s[p.field])}</td>
-              ))}
-              <td className="px-3 py-2 text-right font-semibold tabular-nums">{formatGrade(s.finalGrade)}</td>
-              <td className="px-4 py-2 text-slate-600">
-                <DescriptorCell gradeLevel={gradeLevel} finalGrade={s.finalGrade} />
-              </td>
-              {showRemarks ? (
-                <td className="px-4 py-2 text-slate-600">{getRemarks(s.finalGrade)}</td>
-              ) : null}
-            </tr>
-          ))}
-        </tbody>
-        <tfoot>
-          <tr className="border-t-2 border-slate-300 bg-slate-50 font-bold">
-            <td className="px-4 py-2.5" colSpan={periods.length}>
-              General Average
-            </td>
-            <td className="px-3 py-2.5 text-right tabular-nums">{formatGrade(generalAverage)}</td>
-            <td className="px-4 py-2.5" colSpan={showRemarks ? 2 : 1}>
-              {scale === 'grade10' ? (
-                <DescriptorCell gradeLevel={gradeLevel} finalGrade={generalAverage} />
-              ) : (
-                getRemarks(generalAverage)
-              )}
-            </td>
-          </tr>
-        </tfoot>
-      </table>
-    </div>
-  );
-}
-
-export default function SF10View({ sf10 }) {
+export default function SF10View({ sf10, studentId, teacherId, schoolYear, editableSubjectIds, onSaved }) {
   if (!sf10) return null;
   const { learner, eligibility, currentYear, history } = sf10;
+  const editable = Boolean(teacherId);
 
   return (
     <div className="print-area">
       <div className="print-page rounded-2xl border border-slate-200 bg-[#fbfaf6] p-6 font-serif text-slate-900 shadow-md sm:p-8">
-        <div className="no-print mb-4 flex items-center gap-2 rounded-lg bg-amber-50 px-4 py-2.5 text-sm font-semibold text-amber-800">
-          <Lock className="h-4 w-4" />
-          VIEW ONLY &mdash; this record cannot be edited from this portal
-        </div>
+        {editable ? (
+          <div className="no-print mb-4 flex items-center gap-2 rounded-lg bg-brand-50 px-4 py-2.5 text-sm font-semibold text-brand-800">
+            <Pencil className="h-4 w-4" />
+            EDITABLE &mdash; current-year term grades for your assigned subjects can be entered directly below
+          </div>
+        ) : (
+          <div className="no-print mb-4 flex items-center gap-2 rounded-lg bg-amber-50 px-4 py-2.5 text-sm font-semibold text-amber-800">
+            <Lock className="h-4 w-4" />
+            VIEW ONLY &mdash; changes are managed by authorized teachers
+          </div>
+        )}
 
         <header className="mb-6 border-b-2 border-slate-800 pb-4 text-center">
           <AppLogo className="mx-auto mb-3 h-20 w-20" />
@@ -112,9 +51,18 @@ export default function SF10View({ sf10 }) {
           <section className="mb-6 rounded-lg border border-dashed border-slate-300 p-4 print-avoid-break">
             <h4 className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-500">Eligibility for JHS Enrollment</h4>
             <div className="grid grid-cols-1 gap-x-8 gap-y-3 sm:grid-cols-2">
-              <Field label="Basis of Admission" value={eligibility.basis} />
+              <Field label="Basis of Admission" value={eligibility.basis || 'Not recorded'} />
+              <Field label="Elementary School" value={eligibility.elementarySchool} />
+              <Field label="School ID" value={eligibility.schoolId} />
+              <Field label="School Address" value={eligibility.schoolAddress} />
+              <Field label="General Average" value={eligibility.generalAverage} />
+              <Field label="School Year Graduated" value={eligibility.graduationYear} />
+              <Field label="PEPT / ALS Rating" value={eligibility.assessmentRating} />
+              <Field label="Date of Examination" value={formatDate(eligibility.assessmentDate)} />
+              <Field label="Assessment Center" value={eligibility.assessmentCenter} />
+              <Field label="Other Credential" value={eligibility.otherCredential} />
               <Field label="School Year Enrolled (Grade 7)" value={eligibility.schoolYearEnrolled} />
-              <Field label="Eligible for Enrollment" value={eligibility.eligible ? 'Yes' : 'No'} />
+              <Field label="Eligible for Enrollment" value={eligibility.eligible === true ? 'Yes' : eligibility.eligible === false ? 'No' : 'Not verified'} />
             </div>
           </section>
         ) : null}
@@ -122,7 +70,7 @@ export default function SF10View({ sf10 }) {
         <section className="mb-8 print-avoid-break">
           <div className="mb-1 flex flex-wrap items-baseline justify-between gap-1">
             <h4 className="text-sm font-bold uppercase tracking-wide">
-              {currentYear.gradeLevel} &middot; School Year {currentYear.schoolYear} (Current)
+              {currentYear.gradeLevel} &middot; School Year {currentYear.schoolYear} ({currentYear.isCurrent ? 'Current' : 'Latest enrollment'})
             </h4>
             <p className="text-xs text-slate-500">Adviser: {currentYear.adviser}</p>
           </div>
@@ -137,6 +85,11 @@ export default function SF10View({ sf10 }) {
             finalLabel={currentYear.finalLabel}
             generalAverage={currentYear.generalAverage}
             scale={currentYear.scale}
+            teacherId={teacherId}
+            studentId={studentId}
+            schoolYear={schoolYear ?? currentYear.schoolYear}
+            editableSubjectIds={editableSubjectIds}
+            onSaved={onSaved}
           />
         </section>
 
@@ -164,7 +117,7 @@ function Field({ label, value }) {
   return (
     <div className="flex items-baseline gap-2 border-b border-dotted border-slate-300 pb-1">
       <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">{label}:</span>
-      <span className="text-sm font-medium">{value}</span>
+      <span className="text-sm font-medium">{value ?? '—'}</span>
     </div>
   );
 }

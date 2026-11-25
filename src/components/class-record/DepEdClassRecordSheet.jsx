@@ -8,9 +8,7 @@ import ClassRecordGuide from './ClassRecordGuide.jsx';
 import Input from '../ui/Input.jsx';
 import { formatGrade, cn } from '../../lib/utils.js';
 import {
-  WW_COUNT,
-  PT_COUNT,
-  QA_COUNT,
+  getAssessmentCounts,
   formatRecordName,
   computeInitialGrade,
 } from '../../lib/classRecordSheet.js';
@@ -26,6 +24,7 @@ function GroupHeader({ title, detail, tone, colSpan = 1, rowSpan = 1 }) {
 }
 
 export default function DepEdClassRecordSheet({
+  gradeLevel,
   subjectName,
   classLabel,
   schoolYear,
@@ -44,9 +43,10 @@ export default function DepEdClassRecordSheet({
   onSaveAll,
   pendingSaveCount,
 }) {
-  const wwCols = useMemo(() => Array.from({ length: WW_COUNT }, (_, i) => i), []);
-  const ptCols = useMemo(() => Array.from({ length: PT_COUNT }, (_, i) => i), []);
-  const exCols = useMemo(() => Array.from({ length: QA_COUNT }, (_, i) => i), []);
+  const counts = getAssessmentCounts(gradeLevel);
+  const wwCols = useMemo(() => Array.from({ length: counts.ww }, (_, i) => i), [counts.ww]);
+  const ptCols = useMemo(() => Array.from({ length: counts.pt }, (_, i) => i), [counts.pt]);
+  const exCols = useMemo(() => Array.from({ length: counts.qa }, (_, i) => i), [counts.qa]);
 
   const wwPct = Math.round((gradeComponents?.ww ?? 0.2) * 100);
   const ptPct = Math.round((gradeComponents?.pt ?? 0.5) * 100);
@@ -114,9 +114,9 @@ export default function DepEdClassRecordSheet({
               <tr className="cr-head-row">
                 <GroupHeader title="#" tone="index" rowSpan={2} />
                 <GroupHeader title="Learner" detail="Name & LRN" tone="name" rowSpan={2} />
-                <GroupHeader title="Written Works" detail={`${wwPct}%`} tone="ww" colSpan={WW_COUNT} />
-                <GroupHeader title="Performance Tasks" detail={`${ptPct}%`} tone="pt" colSpan={PT_COUNT} />
-                <GroupHeader title="Examinations" detail={`${exPct}%`} tone="qa" colSpan={QA_COUNT} />
+                <GroupHeader title="Written Works" detail={`${wwPct}%`} tone="ww" colSpan={counts.ww} />
+                <GroupHeader title="Performance Tasks" detail={`${ptPct}%`} tone="pt" colSpan={counts.pt} />
+                <GroupHeader title="Examinations" detail={`${exPct}%`} tone="qa" colSpan={counts.qa} />
                 <GroupHeader title="Initial" detail="Weighted" tone="initial" rowSpan={2} />
                 <GroupHeader title="Transmuted" detail="Posted" tone="transmuted" rowSpan={2} />
                 <GroupHeader title="Final" detail="Year" tone="final" rowSpan={2} />
@@ -158,7 +158,7 @@ export default function DepEdClassRecordSheet({
                 <td colSpan={3} className="cr-td px-3 text-center text-xs text-slate-600">Earned ÷ total points × 100, then apply weights</td>
                 <td className="cr-td no-print" />
               </tr>
-              {!rows.length && <tr><td colSpan={28}><EmptyState icon={ClipboardList} title="No students match your search" description="Clear the search to see the class roster." /></td></tr>}
+              {!rows.length && <tr><td colSpan={counts.ww + counts.pt + counts.qa + 6}><EmptyState icon={ClipboardList} title="No students match your search" description="Clear the search to see the class roster." /></td></tr>}
               {rows.map((row, index) => {
                 const studentId = row.student.studentId;
                 const scores = scoresByStudent[studentId];

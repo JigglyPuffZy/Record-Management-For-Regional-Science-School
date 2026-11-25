@@ -1,4 +1,5 @@
-import { formatGrade, formatDate, getRemarks, getGradeDescriptor } from '../../lib/utils.js';
+import GradeTable from './GradeTable.jsx';
+import { formatGrade, formatDate, getRemarks } from '../../lib/utils.js';
 import EmptyState from '../ui/EmptyState.jsx';
 import { History } from 'lucide-react';
 
@@ -27,36 +28,8 @@ export default function AcademicHistory({ history }) {
             {year.school} &middot; School ID {year.schoolId} &middot; Section {year.section} &middot; {year.district} &middot;{' '}
             {year.division} &middot; {year.region}
           </p>
-          <div className="overflow-x-auto rounded-lg border border-slate-300">
-            <table className="w-full min-w-max text-left text-sm">
-              <thead className="bg-slate-100 text-xs font-semibold uppercase tracking-wide text-slate-600">
-                <tr>
-                  <th className="px-4 py-2.5">Learning Area</th>
-                  <th className="px-3 py-2.5 text-right">Term 1</th>
-                  <th className="px-3 py-2.5 text-right">Term 2</th>
-                  <th className="px-3 py-2.5 text-right">Term 3</th>
-                  <th className="px-3 py-2.5 text-right">Term 4</th>
-                  <th className="px-3 py-2.5 text-right">Final Rating</th>
-                  <th className="px-4 py-2.5">Descriptor</th>
-                  <th className="px-4 py-2.5">Remarks</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-200 bg-white">
-                {year.subjects.map((s) => (
-                  <tr key={s.subjectId}>
-                    <td className="px-4 py-2 font-medium text-slate-800">{s.subjectName}</td>
-                    <td className="px-3 py-2 text-right tabular-nums text-slate-700">{formatGrade(s.quarter1)}</td>
-                    <td className="px-3 py-2 text-right tabular-nums text-slate-700">{formatGrade(s.quarter2)}</td>
-                    <td className="px-3 py-2 text-right tabular-nums text-slate-700">{formatGrade(s.quarter3)}</td>
-                    <td className="px-3 py-2 text-right tabular-nums text-slate-700">{formatGrade(s.quarter4)}</td>
-                    <td className="px-3 py-2 text-right font-semibold tabular-nums text-slate-900">{formatGrade(s.finalGrade)}</td>
-                    <td className="px-4 py-2 text-slate-600">{getGradeDescriptor(s.finalGrade)}</td>
-                    <td className="px-4 py-2 text-slate-600">{getRemarks(s.finalGrade)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <GradeTable gradeLevel={year.gradeLevel} subjects={year.subjects} periods={year.gradingPeriods}
+            finalLabel={year.finalLabel} generalAverage={year.generalAverage} scale={year.scale} />
 
           {year.remedialClasses && year.remedialClasses.length > 0 ? (
             <div className="mt-3 print-avoid-break">

@@ -4,6 +4,7 @@ import saveGrade from '../api/save-grade.js';
 import access from '../api/access.js';
 import admin from '../api/admin.js';
 import records from '../api/records.js';
+import academicWorkflows from '../api/academic-workflows.js';
 
 function loadEnv() {
   try {
@@ -55,6 +56,7 @@ function mockRes(res) {
 }
 
 const routes = {
+  '/api/academic-workflows': academicWorkflows,
   '/api/access': access,
   '/api/admin': admin,
   '/api/records': records,

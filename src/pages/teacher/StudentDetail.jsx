@@ -1,20 +1,24 @@
 import { useNavigate, useParams } from 'react-router-dom';
+import { useState } from 'react';
 import { Printer, ShieldAlert, FileText } from 'lucide-react';
 import PageContainer from '../../components/layout/PageContainer.jsx';
 import Button from '../../components/ui/Button.jsx';
 import EmptyState from '../../components/ui/EmptyState.jsx';
 import SF10View from '../../components/sf10/SF10View.jsx';
+import RecordEditor from '../../components/sf10/RecordEditor.jsx';
 import { formatClassLabel } from '../../lib/utils.js';
 import { useAuth } from '../../context/AuthContext.jsx';
-import { teacherCanViewStudent, getSF10 } from '../../services/academicRecords.js';
+import { teacherCanViewStudent, getSF10, getStudent, getSubjectIdsForTeacherInClass } from '../../services/academicRecords.js';
 
 export default function TeacherStudentDetail() {
   const { studentId } = useParams();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [, refresh] = useState(0);
 
   const authorized = teacherCanViewStudent(user.id, studentId);
   const sf10 = authorized ? getSF10(studentId) : null;
+  const classId = authorized ? getStudent(studentId)?.classId : null;
 
   if (!authorized || !sf10) {
     return (
@@ -40,7 +44,12 @@ export default function TeacherStudentDetail() {
         </Button>
       }
     >
-      <SF10View sf10={sf10} />
+      <div className="no-print mb-4 flex flex-wrap justify-end gap-2">
+        <RecordEditor sf10={sf10} studentId={studentId} teacherId={user.id} classId={classId} onSaved={() => refresh(value => value + 1)}/>
+      </div>
+      <SF10View sf10={sf10} studentId={studentId} teacherId={user.id}
+        editableSubjectIds={sf10.currentYear.isCurrent ? getSubjectIdsForTeacherInClass(user.id, classId) : []}
+        onSaved={() => refresh(value => value + 1)}/>
     </PageContainer>
   );
 }

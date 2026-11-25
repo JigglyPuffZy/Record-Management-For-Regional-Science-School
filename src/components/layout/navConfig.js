@@ -32,6 +32,7 @@ const ADMIN_NAV = [
   { to: '/admin/dashboard', label: 'Overview', icon: ShieldCheck },
   { to: '/admin/registrations', label: 'Registrations', icon: UserCheck },
   { to: '/admin/accounts', label: 'Accounts', icon: Users },
+  { to: '/admin/academic-setup', label: 'Academics', icon: Settings },
 ];
 
 export function getNavForRole(role) {

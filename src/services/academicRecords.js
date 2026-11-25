@@ -6,7 +6,7 @@ import {
   TEACHING_ASSIGNMENTS,
   getClassById,
   getClassLabel,
-  getClassesForTeacher,
+  getClassesForTeacher as getAssignedClasses,
   getAssignmentsForTeacher,
   getSubjectIdsForTeacherInClass,
   teacherOwnsClassSubject,
@@ -23,7 +23,7 @@ import {
   saveGradeInDb,
 } from './supabaseData.js';
 import { getTeacherById, setTeachersCache } from '../data/teachers.js';
-import { getAcademicHistoryForStudent } from '../data/academicHistory.js';
+import { getAcademicHistoryForStudent, setAcademicHistoryCache, buildAcademicHistory } from '../data/academicHistory.js';
 import { isValidGrade, computeAverage } from '../lib/utils.js';
 import {
   getGradingPeriodsForGradeLevel,
@@ -33,16 +33,27 @@ import {
 import { getDescriptorForGradeLevel } from '../lib/grading.js';
 
 let grades = [];
+let activeSchoolYear = ACTIVE_SCHOOL_YEAR;
+let eligibilityRecords = [];
+let historyData;
+let revision = 0;
 const listeners = new Set();
 let hydration;
 let generation = 0;
-function notifyGradeListeners() { listeners.forEach(fn => fn()); }
+function notifyGradeListeners() {
+  if (historyData) setAcademicHistoryCache(buildAcademicHistory({ ...historyData, grades, school: SCHOOL, subjects: SUBJECTS }));
+  listeners.forEach(fn => fn());
+}
 
 export function hydrateRecords() {
   if (hydration) return hydration;
   const started = generation;
-  const pending = hydrateAllFromDb().then(({ students, grades: dbGrades, classes, assignments, teachers }) => {
-    if (started !== generation) return;
+  const startedRevision = revision;
+  const pending = hydrateAllFromDb().then(({ students, grades: dbGrades, classes, assignments, teachers, ...extra }) => {
+    if (started !== generation || startedRevision !== revision) return;
+    activeSchoolYear = extra.schoolYears.find(year => year.is_active)?.id || ACTIVE_SCHOOL_YEAR;
+    eligibilityRecords = extra.eligibility;
+    historyData = { classes, teachers, archives: extra.archives, archivedGrades: extra.archivedGrades, remedials: extra.remedials };
     setClassesCache(classes, assignments);
     setTeachersCache(teachers);
     setStudentsCache(students);
@@ -57,6 +68,10 @@ export function clearRecords() {
   generation += 1;
   hydration = undefined;
   grades = [];
+  activeSchoolYear = ACTIVE_SCHOOL_YEAR;
+  eligibilityRecords = [];
+  historyData = undefined;
+  setAcademicHistoryCache([]);
   setStudentsCache([]);
   setClassesCache([], []);
   setTeachersCache([]);
@@ -72,7 +87,7 @@ export function getSchool() {
 }
 
 export function getActiveSchoolYear() {
-  return ACTIVE_SCHOOL_YEAR;
+  return activeSchoolYear;
 }
 
 export function getGradingPeriodsForClass(classId) {
@@ -87,9 +102,12 @@ export {
   getClassById,
   getClassLabel,
   getSubjectById,
-  getClassesForTeacher,
   getSubjectIdsForTeacherInClass,
 };
+
+export function getClassesForTeacher(teacherId) {
+  return getAssignedClasses(teacherId).filter(cls => cls.schoolYear === activeSchoolYear);
+}
 
 export function getStudent(studentId) {
   return getStudentById(studentId);
@@ -102,7 +120,7 @@ export function getRoster(classId) {
 }
 
 export function getTeachingAssignments(teacherId) {
-  return getAssignmentsForTeacher(teacherId).map((a) => ({
+  return getAssignmentsForTeacher(teacherId).filter(a => getClassById(a.classId)?.schoolYear === activeSchoolYear).map((a) => ({
     ...a,
     classLabel: getClassLabel(a.classId),
     subjectName: getSubjectById(a.subjectId)?.name ?? a.subjectId,
@@ -144,12 +162,12 @@ function enrichGradeRow(row) {
   };
 }
 
-function getGradeRow(studentId, classId, subjectId, schoolYear = ACTIVE_SCHOOL_YEAR) {
+function getGradeRow(studentId, classId, subjectId, schoolYear = activeSchoolYear) {
   const row = findGradeRecord(studentId, classId, subjectId, schoolYear) ?? blankRow(studentId, classId, subjectId, schoolYear);
   return enrichGradeRow(row);
 }
 
-export function getClassRecordRows(classId, subjectId, schoolYear = ACTIVE_SCHOOL_YEAR) {
+export function getClassRecordRows(classId, subjectId, schoolYear = activeSchoolYear) {
   return getRoster(classId).map((student) => {
     const row = getGradeRow(student.studentId, classId, subjectId, schoolYear);
     return { student, ...row };
@@ -163,9 +181,10 @@ function getSubjectIdsForClass(classId) {
   return SUBJECTS.filter((s) => ids.has(s.id)).map((s) => s.id);
 }
 
-export function getCurrentYearGrades(studentId, schoolYear = ACTIVE_SCHOOL_YEAR) {
+export function getCurrentYearGrades(studentId, schoolYear) {
   const student = getStudentById(studentId);
   if (!student) return [];
+  schoolYear ??= getClassById(student.classId)?.schoolYear || activeSchoolYear;
   const assignedSubjects = getSubjectIdsForClass(student.classId);
 
   return assignedSubjects.map((subjectId) => {
@@ -191,12 +210,12 @@ export function getCurrentYearGrades(studentId, schoolYear = ACTIVE_SCHOOL_YEAR)
   });
 }
 
-export function getGeneralAverage(studentId, schoolYear = ACTIVE_SCHOOL_YEAR) {
+export function getGeneralAverage(studentId, schoolYear) {
   const rows = getCurrentYearGrades(studentId, schoolYear);
-  return computeAverage(rows.map((r) => r.finalGrade));
+  return rows.length && rows.every(row => row.finalGrade != null) ? computeAverage(rows.map((r) => r.finalGrade)) : null;
 }
 
-function getSubjectCount(studentId, schoolYear = ACTIVE_SCHOOL_YEAR) {
+function getSubjectCount(studentId, schoolYear) {
   return getCurrentYearGrades(studentId, schoolYear).length;
 }
 
@@ -205,9 +224,10 @@ export function getSF10(studentId) {
   if (!student) return null;
   const cls = getClassById(student.classId);
   const gradeLevel = cls?.gradeLevel ?? 'Unknown';
-  const currentSubjects = getCurrentYearGrades(studentId, ACTIVE_SCHOOL_YEAR);
-  const history = getAcademicHistoryForStudent(studentId);
-  const earliestYear = history.length > 0 ? history[0].schoolYear : ACTIVE_SCHOOL_YEAR;
+  const learnerYear = cls?.schoolYear || activeSchoolYear;
+  const currentSubjects = getCurrentYearGrades(studentId, learnerYear);
+  const history = getAcademicHistoryForStudent(studentId).filter(year => year.schoolYear !== learnerYear);
+  const eligibility = eligibilityRecords.find(row => row.student_id === studentId);
   const curriculum = getCurriculumForGradeLevel(gradeLevel);
 
   return {
@@ -222,17 +242,13 @@ export function getSF10(studentId) {
       sex: student.sex,
       gradeLevel,
       section: cls?.section ?? 'Unknown',
-      schoolYear: ACTIVE_SCHOOL_YEAR,
+      schoolYear: learnerYear,
       school: SCHOOL.name,
       status: student.status,
     },
-    eligibility: {
-      basis: 'Completed Elementary Education (Grade 6)',
-      eligible: student.status === 'Active',
-      schoolYearEnrolled: earliestYear,
-    },
+    eligibility: eligibility?.details || {},
     currentYear: {
-      schoolYear: ACTIVE_SCHOOL_YEAR,
+      schoolYear: learnerYear,
       gradeLevel,
       section: cls?.section ?? 'Unknown',
       school: SCHOOL.name,
@@ -242,10 +258,11 @@ export function getSF10(studentId) {
       region: SCHOOL.region,
       adviser: cls ? getTeacherById(cls.adviserId)?.name ?? 'Unassigned' : 'Unassigned',
       subjects: currentSubjects,
-      generalAverage: getGeneralAverage(studentId),
+      generalAverage: currentSubjects.length && currentSubjects.every(s => s.finalGrade != null) ? computeAverage(currentSubjects.map(s => s.finalGrade)) : null,
       gradingPeriods: curriculum.periods,
       finalLabel: curriculum.finalLabel,
       scale: curriculum.scale,
+      isCurrent: learnerYear === activeSchoolYear && student.status === 'Active',
     },
     history,
   };
@@ -265,7 +282,7 @@ function applyGradeToCache(row) {
   else grades.push(row);
 }
 
-export async function saveGrade({ teacherId, studentId, classId, subjectId, schoolYear = ACTIVE_SCHOOL_YEAR, quarter, value }) {
+export async function saveGrade({ teacherId, studentId, classId, subjectId, schoolYear = activeSchoolYear, quarter, value }) {
   if (teacherId && !teacherOwnsClassSubject(teacherId, classId, subjectId)) {
     throw new GradeValidationError('You are not assigned to this class and subject.');
   }
@@ -281,11 +298,13 @@ export async function saveGrade({ teacherId, studentId, classId, subjectId, scho
     throw new GradeValidationError('Invalid grade. Please enter a value from 0 to 100.');
   }
 
+  revision += 1;
   const saved = await saveGradeInDb({
     studentId, classId, subjectId, schoolYear,
     field: periodDef.field,
     value: cleared ? null : Number(value),
   });
+  revision += 1;
   applyGradeToCache(saved);
   notifyGradeListeners();
   return enrichGradeRow(saved);
@@ -322,7 +341,7 @@ export function getStudentDashboardSummary(studentId) {
   return {
     student,
     classLabel: cls ? getClassLabel(cls.id) : 'Unassigned',
-    schoolYear: ACTIVE_SCHOOL_YEAR,
+    schoolYear: cls?.schoolYear || activeSchoolYear,
     generalAverage: getGeneralAverage(student.studentId),
     subjectCount: getSubjectCount(student.studentId),
     status: student.status,
@@ -346,14 +365,14 @@ export function getTeacherDashboardSummary(teacherId) {
   let pending = 0;
   for (const a of assignments) {
     const gradeLevel = getClassById(a.classId)?.gradeLevel ?? 'Grade 7';
-    const rows = getClassRecordRows(a.classId, a.subjectId, ACTIVE_SCHOOL_YEAR);
+    const rows = getClassRecordRows(a.classId, a.subjectId, activeSchoolYear);
     const hasGap = rows.some((row) => gradeRecordHasGap(gradeLevel, row));
     if (hasGap) pending += 1;
   }
 
   return {
     teacher,
-    schoolYear: ACTIVE_SCHOOL_YEAR,
+    schoolYear: activeSchoolYear,
     classes,
     totalStudents: studentIds.size,
     subjectNames,

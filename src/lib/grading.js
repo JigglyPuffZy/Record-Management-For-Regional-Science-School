@@ -1,7 +1,7 @@
 import { getGradeDescriptor, getRemarks } from './utils.js';
 import { getCurriculumForGradeLevel } from '../data/curriculum.js';
 
-// Grade 10 numerical grade → descriptor scale (DepEd MATATAG / current G10).
+// School's current Grade 10 scale, retained until the replacement template is supplied.
 const GRADE_10_SCALE = [
   { min: 90, max: 100, level: 'Advancing', filipinoDescriptor: 'Namumukod-tangi' },
   { min: 80, max: 89, level: 'Benchmarking', filipinoDescriptor: 'Napapamalas' },
@@ -13,7 +13,7 @@ const GRADE_10_SCALE = [
 function findGrade10Band(grade) {
   const num = Number(grade);
   if (Number.isNaN(num)) return null;
-  return GRADE_10_SCALE.find((band) => num >= band.min && num <= band.max) ?? null;
+  return GRADE_10_SCALE.find((band) => num >= band.min && num < band.max + 1) ?? null;
 }
 
 /**
@@ -39,7 +39,7 @@ export function getDescriptorForGradeLevel(gradeLevel, grade) {
   }
   if (scale === 'grade10') {
     const { level, filipinoDescriptor } = getGrade10Descriptor(grade);
-    return { descriptor: level, filipinoDescriptor, remarks: '', level };
+    return { descriptor: level, filipinoDescriptor, remarks: level, level };
   }
   return {
     descriptor: getGradeDescriptor(grade),

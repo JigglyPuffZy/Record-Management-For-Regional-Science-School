@@ -2,17 +2,23 @@ const STORAGE_PREFIX = 'sf10_class_record_sheet_v1';
 
 export const WW_COUNT = 10;
 export const PT_COUNT = 10;
-export const QA_COUNT = 2;
+export const QA_COUNT = 3;
+
+export function getAssessmentCounts(gradeLevel) {
+  const extra = ['Grade 7', 'Grade 8', 'Grade 9'].includes(gradeLevel) ? 4 : 0;
+  return { ww: WW_COUNT + extra, pt: PT_COUNT + extra, qa: QA_COUNT };
+}
 
 export function sheetStorageKey({ classId, subjectId, schoolYear, periodId }) {
   return `${STORAGE_PREFIX}:${classId}:${subjectId}:${schoolYear}:${periodId}`;
 }
 
-export function createEmptyScoreSet() {
+export function createEmptyScoreSet(gradeLevel) {
+  const counts = getAssessmentCounts(gradeLevel);
   return {
-    ww: Array(WW_COUNT).fill(''),
-    pt: Array(PT_COUNT).fill(''),
-    qa: Array(QA_COUNT).fill(''),
+    ww: Array(counts.ww).fill(''),
+    pt: Array(counts.pt).fill(''),
+    qa: Array(counts.qa).fill(''),
   };
 }
 
@@ -38,12 +44,12 @@ export function saveSheetScores(key, scoresByStudent) {
 const SCORE_CATEGORIES = ['ww', 'pt', 'qa'];
 export const isBlankScore = value => value === null || value === undefined || String(value).trim() === '';
 
-export function loadSheetTotalPoints(key, legacyScores = {}) {
+export function loadSheetTotalPoints(key, legacyScores = {}, gradeLevel) {
   try {
     const raw = localStorage.getItem(`${key}:total-points`);
-    if (raw) return normalizeScoreSet(JSON.parse(raw));
+    if (raw) return normalizeScoreSet(JSON.parse(raw), gradeLevel);
   } catch { /* fall back to the existing percentage-based scores */ }
-  const totals = createEmptyScoreSet();
+  const totals = createEmptyScoreSet(gradeLevel);
   for (const category of SCORE_CATEGORIES) {
     totals[category] = totals[category].map((_, index) => Object.values(legacyScores).some(scores => !isBlankScore(scores?.[category]?.[index])) ? '100' : '');
   }
@@ -142,12 +148,12 @@ export function formatRecordName(student) {
   return `${last}${last && given ? ', ' : ''}${given}`;
 }
 
-export function normalizeScoreSet(raw) {
-  const base = createEmptyScoreSet();
+export function normalizeScoreSet(raw, gradeLevel) {
+  const base = createEmptyScoreSet(gradeLevel);
   if (!raw) return base;
   return {
-    ww: Array.from({ length: WW_COUNT }, (_, i) => String(raw.ww?.[i] ?? '')),
-    pt: Array.from({ length: PT_COUNT }, (_, i) => String(raw.pt?.[i] ?? '')),
-    qa: Array.from({ length: QA_COUNT }, (_, i) => String(raw.qa?.[i] ?? '')),
+    ww: base.ww.map((_, i) => String(raw.ww?.[i] ?? '')),
+    pt: base.pt.map((_, i) => String(raw.pt?.[i] ?? '')),
+    qa: base.qa.map((_, i) => String(raw.qa?.[i] ?? '')),
   };
 }

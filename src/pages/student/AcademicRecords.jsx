@@ -19,7 +19,7 @@ export default function StudentAcademicRecords() {
 
   const yearOptions = useMemo(() => {
     if (!sf10) return [];
-    const current = { value: sf10.currentYear.schoolYear, label: `${sf10.currentYear.schoolYear} (Current)`, gradeLevel: sf10.currentYear.gradeLevel };
+    const current = { value: sf10.currentYear.schoolYear, label: `${sf10.currentYear.schoolYear} (${sf10.currentYear.isCurrent ? 'Current' : 'Latest enrollment'})`, gradeLevel: sf10.currentYear.gradeLevel };
     const past = sf10.history.map((h) => ({ value: h.schoolYear, label: h.schoolYear, gradeLevel: h.gradeLevel }));
     return [current, ...past];
   }, [sf10]);

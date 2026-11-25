@@ -39,11 +39,11 @@ import {
 import { getGradeComponentsForSubject } from '../../lib/gradeComponents.js';
 import { transmuteInitialGrade } from '../../lib/transmutation.js';
 
-function buildScoresState(rows, stored) {
+function buildScoresState(rows, stored, gradeLevel) {
   const next = {};
   for (const row of rows) {
     const id = row.student.studentId;
-    next[id] = normalizeScoreSet(stored[id]);
+    next[id] = normalizeScoreSet(stored[id], gradeLevel);
   }
   return next;
 }
@@ -75,7 +75,7 @@ export default function TeacherClassRecord() {
   const [query, setQuery] = useState('');
 
   const [scoresByStudent, setScoresByStudent] = useState({});
-  const [totalPoints, setTotalPoints] = useState(createEmptyScoreSet);
+  const [totalPoints, setTotalPoints] = useState(() => createEmptyScoreSet(cls?.gradeLevel));
   const [dirtyIds, setDirtyIds] = useState(new Set());
   const [invalidCells, setInvalidCells] = useState(new Set());
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -138,14 +138,14 @@ export default function TeacherClassRecord() {
   useEffect(() => {
     if (!storageKey || !rows.length) {
       setScoresByStudent({});
-      setTotalPoints(createEmptyScoreSet());
+      setTotalPoints(createEmptyScoreSet(cls?.gradeLevel));
       setDirtyIds(new Set());
       setInvalidCells(new Set());
       return;
     }
     const stored = loadSheetScores(storageKey);
-    const nextScores = buildScoresState(rows, stored);
-    const nextTotals = loadSheetTotalPoints(storageKey, stored);
+    const nextScores = buildScoresState(rows, stored, cls?.gradeLevel);
+    const nextTotals = loadSheetTotalPoints(storageKey, stored, cls?.gradeLevel);
     saveSheetTotalPoints(storageKey, nextTotals);
     setScoresByStudent(nextScores);
     setTotalPoints(nextTotals);
@@ -154,13 +154,13 @@ export default function TeacherClassRecord() {
     const dirty = new Set();
     for (const row of rows) {
       const id = row.student.studentId;
-      const initial = computeInitialGrade(nextScores[id] ?? createEmptyScoreSet(), gradeComponents, nextTotals);
+      const initial = computeInitialGrade(nextScores[id] ?? createEmptyScoreSet(cls?.gradeLevel), gradeComponents, nextTotals);
       const transmuted = initial === null ? null : transmuteInitialGrade(initial);
       const saved = activeField ? row[activeField] : null;
       if (transmuted != null && transmuted !== saved) dirty.add(id);
     }
     setDirtyIds(dirty);
-  }, [storageKey, rows, activeField, gradeComponents]);
+  }, [storageKey, rows, activeField, gradeComponents, cls?.gradeLevel]);
 
   const persistScores = useCallback((nextScores) => {
     if (storageKey) saveSheetScores(storageKey, nextScores);
@@ -178,7 +178,7 @@ export default function TeacherClassRecord() {
 
   function handleScoreChange(studentId, category, index, raw) {
     setScoresByStudent((prev) => {
-      const current = prev[studentId] ?? createEmptyScoreSet();
+      const current = prev[studentId] ?? createEmptyScoreSet(cls?.gradeLevel);
       const nextSet = {
         ...current,
         [category]: current[category].map((v, i) => (i === index ? raw : v)),
@@ -200,7 +200,7 @@ export default function TeacherClassRecord() {
   }
 
   async function handleSaveRow(studentId) {
-    const errors = collectInvalidScoreCells({ [studentId]: scoresByStudent[studentId] ?? createEmptyScoreSet() }, totalPoints);
+    const errors = collectInvalidScoreCells({ [studentId]: scoresByStudent[studentId] ?? createEmptyScoreSet(cls?.gradeLevel) }, totalPoints);
     if (errors.size) {
       toast.error('Enter positive total points and scores from 0 up to their total points.');
       return;
@@ -259,7 +259,7 @@ export default function TeacherClassRecord() {
     setSaving(true);
     try {
       const entries = [...dirtyIds].map((studentId) => {
-        const { transmuted } = resolveTermGrade(scoresByStudent[studentId] ?? createEmptyScoreSet());
+        const { transmuted } = resolveTermGrade(scoresByStudent[studentId] ?? createEmptyScoreSet(cls?.gradeLevel));
         return {
           teacherId: user.id,
           studentId,
@@ -316,6 +316,7 @@ export default function TeacherClassRecord() {
           </div>
 
           <DepEdClassRecordSheet
+            gradeLevel={cls?.gradeLevel}
             subjectName={subjectName}
             classLabel={classLabel}
             schoolYear={schoolYear}
