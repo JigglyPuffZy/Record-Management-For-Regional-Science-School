@@ -1,12 +1,12 @@
 import { Lock, Pencil } from 'lucide-react';
-import { formatDate } from '../../lib/utils.js';
+import SF10Details from './SF10Details.jsx';
 import GradeTable from './GradeTable.jsx';
 import AcademicHistory from './AcademicHistory.jsx';
 import AppLogo from '../ui/AppLogo.jsx';
 
 export default function SF10View({ sf10, studentId, teacherId, schoolYear, editableSubjectIds, onSaved }) {
   if (!sf10) return null;
-  const { learner, eligibility, currentYear, history } = sf10;
+  const { learner, currentYear, history } = sf10;
   const editable = Boolean(teacherId);
 
   return (
@@ -15,7 +15,7 @@ export default function SF10View({ sf10, studentId, teacherId, schoolYear, edita
         {editable ? (
           <div className="no-print mb-4 flex items-center gap-2 rounded-lg bg-brand-50 px-4 py-2.5 text-sm font-semibold text-brand-800">
             <Pencil className="h-4 w-4" />
-            EDITABLE &mdash; current-year term grades for your assigned subjects can be entered directly below
+            EDITABLE &mdash; learner details, eligibility, and your assigned subject grades can be entered directly below
           </div>
         ) : (
           <div className="no-print mb-4 flex items-center gap-2 rounded-lg bg-amber-50 px-4 py-2.5 text-sm font-semibold text-amber-800">
@@ -33,39 +33,7 @@ export default function SF10View({ sf10, studentId, teacherId, schoolYear, edita
           </p>
         </header>
 
-        <section className="mb-6 print-avoid-break">
-          <h4 className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-500">Learner&rsquo;s Information</h4>
-          <div className="grid grid-cols-1 gap-x-8 gap-y-3 sm:grid-cols-2">
-            <Field label="Last Name" value={learner.lastName} />
-            <Field label="First Name" value={learner.firstName} />
-            <Field label="Middle Name" value={learner.middleName || '—'} />
-            <Field label="Name Extension" value={learner.nameExtension || '—'} />
-            <Field label="LRN" value={learner.lrn} />
-            <Field label="Birthdate" value={formatDate(learner.birthdate)} />
-            <Field label="Sex" value={learner.sex} />
-            <Field label="Status" value={learner.status} />
-          </div>
-        </section>
-
-        {eligibility ? (
-          <section className="mb-6 rounded-lg border border-dashed border-slate-300 p-4 print-avoid-break">
-            <h4 className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-500">Eligibility for JHS Enrollment</h4>
-            <div className="grid grid-cols-1 gap-x-8 gap-y-3 sm:grid-cols-2">
-              <Field label="Basis of Admission" value={eligibility.basis || 'Not recorded'} />
-              <Field label="Elementary School" value={eligibility.elementarySchool} />
-              <Field label="School ID" value={eligibility.schoolId} />
-              <Field label="School Address" value={eligibility.schoolAddress} />
-              <Field label="General Average" value={eligibility.generalAverage} />
-              <Field label="School Year Graduated" value={eligibility.graduationYear} />
-              <Field label="PEPT / ALS Rating" value={eligibility.assessmentRating} />
-              <Field label="Date of Examination" value={formatDate(eligibility.assessmentDate)} />
-              <Field label="Assessment Center" value={eligibility.assessmentCenter} />
-              <Field label="Other Credential" value={eligibility.otherCredential} />
-              <Field label="School Year Enrolled (Grade 7)" value={eligibility.schoolYearEnrolled} />
-              <Field label="Eligible for Enrollment" value={eligibility.eligible === true ? 'Yes' : eligibility.eligible === false ? 'No' : 'Not verified'} />
-            </div>
-          </section>
-        ) : null}
+        <SF10Details key={studentId || learner.lrn} sf10={sf10} studentId={studentId} teacherId={teacherId} onSaved={onSaved}/>
 
         <section className="mb-8 print-avoid-break">
           <div className="mb-1 flex flex-wrap items-baseline justify-between gap-1">
@@ -109,15 +77,6 @@ export default function SF10View({ sf10, studentId, teacherId, schoolYear, edita
           </div>
         </footer>
       </div>
-    </div>
-  );
-}
-
-function Field({ label, value }) {
-  return (
-    <div className="flex items-baseline gap-2 border-b border-dotted border-slate-300 pb-1">
-      <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">{label}:</span>
-      <span className="text-sm font-medium">{value ?? '—'}</span>
     </div>
   );
 }

@@ -58,3 +58,21 @@ test('workflow validation ignores forged identities, rejects invalid values, and
   assert.throws(() => validateWorkflow('correct-history', { studentId: 'S1', reason: 'verified', grades: { quarter1: '90' } }));
   assert.deepEqual(validateWorkflow('advance', { reason: 'Registrar confirmed', outcome: 'promote', targetClassId: 'C8', studentIds: ['S1', 'S1'] }).studentIds, ['S1']);
 });
+
+test('inline SF10 details validate identity and eligibility while ignoring forged enrollment and account fields', () => {
+  const input = {
+    studentId: 'S1', reason: 'Verified enrollment form',
+    learner: { firstName: ' Test ', lastName: ' Learner ', middleName: '', nameExtension: 'Jr.', lrn: '123456789012', birthdate: '2011-01-01', sex: 'Male', role: 'admin', status: 'Graduated', studentId: 'other' },
+    details: { generalAverage: '92.5', eligible: true },
+    expected: { learnerUpdatedAt: '2026-11-26T00:00:00Z', eligibilityUpdatedAt: null },
+  };
+  const result = validateWorkflow('sf10-details', input);
+  assert.equal(result.learner.firstName, 'Test'); assert.equal(result.learner.lastName, 'Learner');
+  assert.equal(result.learner.status, undefined); assert.equal(result.learner.role, undefined); assert.equal(result.learner.studentId, undefined);
+  assert.equal(result.details.generalAverage, 92.5); assert.equal(result.details.eligible, true);
+  for (const patch of [{ lrn: '123' }, { firstName: '' }, { birthdate: '2011-02-30' }, { birthdate: '9999-01-01' }, { sex: 'Invalid' }]) {
+    assert.throws(() => validateWorkflow('sf10-details', { ...input, learner: { ...input.learner, ...patch } }));
+  }
+  assert.throws(() => validateWorkflow('sf10-details', { ...input, expected: {} }));
+  assert.throws(() => validateWorkflow('sf10-details', { ...input, details: { generalAverage: 101 } }));
+});

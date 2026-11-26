@@ -8,17 +8,9 @@ import { hydrateRecords, getSubjectIdsForTeacherInClass, getSubjects } from '../
 import { getGradingPeriodsForGradeLevel } from '../../data/curriculum.js';
 import { useToast } from '../../context/ToastContext.jsx';
 
-const eligibilityFields = [
-  ['basis', 'Basis of admission'], ['elementarySchool', 'Elementary school'], ['schoolId', 'Elementary school ID'],
-  ['schoolAddress', 'School address'], ['generalAverage', 'General average', 'number'], ['graduationYear', 'School year graduated'],
-  ['schoolYearEnrolled', 'School year enrolled in Grade 7'], ['assessmentRating', 'PEPT / ALS rating'],
-  ['assessmentDate', 'Date of examination', 'date'], ['assessmentCenter', 'Assessment center / address'], ['otherCredential', 'Other credential'],
-];
-
 export default function RecordEditor({ sf10, studentId, teacherId, classId, onSaved }) {
   const toast = useToast();
   const [mode, setMode] = useState('');
-  const [details, setDetails] = useState({});
   const [schoolYear, setSchoolYear] = useState('');
   const [subjectId, setSubjectId] = useState('');
   const [grades, setGrades] = useState({});
@@ -35,39 +27,33 @@ export default function RecordEditor({ sf10, studentId, teacherId, classId, onSa
     setGrades(Object.fromEntries((mode === 'prior-record' ? periods : record?.gradingPeriods || []).map(period => [period.field, subject?.[period.field] ?? ''])));
   }
   function open(value) {
-    setMode(value); setReason(''); setDetails({ ...sf10.eligibility }); setSchoolYear(''); setSubjectId(''); setGrades({});
+    setMode(value); setReason(''); setSchoolYear(''); setSubjectId(''); setGrades({});
     setPriorRecord({ gradeLevel: 'Grade 7', section: '', adviser: '', school: sf10.currentYear.school, schoolId: sf10.currentYear.schoolId, district: sf10.currentYear.district, division: sf10.currentYear.division, region: sf10.currentYear.region });
   }
   async function submit(event) {
     event.preventDefault(); setSaving(true);
     try {
       const numericGrades = Object.fromEntries(Object.entries(grades).map(([key, value]) => [key, value === '' ? null : Number(value)]));
-      await apiPost('/api/academic-workflows', { action: mode, studentId, details, schoolYear, subjectId, grades: numericGrades, reason, ...priorRecord });
+      await apiPost('/api/academic-workflows', { action: mode, studentId, schoolYear, subjectId, grades: numericGrades, reason, ...priorRecord });
       await hydrateRecords(); onSaved(); setMode(''); toast.success('Academic record saved. The student portal will refresh automatically.');
     } catch (err) { toast.error(err.message); }
     finally { setSaving(false); }
   }
   return <>
-    <Button variant="secondary" onClick={() => open('eligibility')}>Edit eligibility</Button>
     <Button variant="secondary" disabled={sf10.learner.gradeLevel === 'Grade 7'} onClick={() => open('prior-record')}>Add prior record</Button>
     <Button variant="secondary" disabled={!sf10.history.some(record => record.archiveId)} onClick={() => open('correct-history')}>Correct prior grades</Button>
-    <Modal open={!!mode} onClose={() => !saving && setMode('')} size="lg" title={mode === 'eligibility' ? 'Eligibility for JHS enrollment' : mode === 'prior-record' ? 'Enter a verified prior academic record' : 'Correct a closed academic year'}>
+    <Modal open={!!mode} onClose={() => !saving && setMode('')} size="lg" title={mode === 'prior-record' ? 'Enter a verified prior academic record' : 'Correct a closed academic year'}>
       <form onSubmit={submit} className="space-y-4">
         <p className="text-sm text-slate-600">{sf10.learner.name} · LRN {sf10.learner.lrn}</p>
-        {mode === 'eligibility' ? <>
-          <div className="grid gap-4 sm:grid-cols-2">{eligibilityFields.map(([key, label, type = 'text']) => <Input key={key} id={`eligibility-${key}`} label={label} type={type} value={details[key] ?? ''} min={type === 'number' ? 0 : undefined} max={type === 'number' ? 100 : undefined} step={type === 'number' ? '0.01' : undefined} onChange={event => setDetails(prev => ({ ...prev, [key]: event.target.value }))}/>)}</div>
-          <Select id="eligibility-verification" label="Eligible for enrollment" value={details.eligible == null ? '' : String(details.eligible)} placeholder="Not verified" options={[{ value: 'true', label: 'Yes — verified' }, { value: 'false', label: 'No' }]} onChange={event => setDetails(prev => ({ ...prev, eligible: event.target.value === '' ? null : event.target.value === 'true' }))}/>
-        </> : <>
-          <p className="text-sm text-slate-600">Only your currently assigned subjects can be corrected. Final ratings and remarks are recalculated automatically, and the reason is recorded.</p>
-          {mode === 'prior-record' ? <>
-            <p className="text-sm text-slate-600">Copy verified grades from the learner’s existing SF10, one assigned subject at a time. Do not enter estimated grades.</p>
-            <Input id="prior-year" label="Prior school year" required pattern="[0-9]{4}-[0-9]{4}" placeholder="2025-2026" value={schoolYear} onChange={event => setSchoolYear(event.target.value)}/>
-            <Select id="prior-grade" label="Prior grade level" options={[7, 8, 9].filter(grade => grade < Number(sf10.learner.gradeLevel.replace('Grade ', ''))).map(grade => ({ value: `Grade ${grade}`, label: `Grade ${grade}` }))} value={priorRecord.gradeLevel} onChange={event => setPriorRecord(prev => ({ ...prev, gradeLevel: event.target.value }))}/>
-            <div className="grid gap-4 sm:grid-cols-2">{[['section', 'Section'], ['adviser', 'Adviser'], ['school', 'School name'], ['schoolId', 'School ID'], ['district', 'District'], ['division', 'Division'], ['region', 'Region']].map(([key, label]) => <Input key={key} id={`prior-${key}`} label={label} required={['section', 'school'].includes(key)} value={priorRecord[key] || ''} onChange={event => setPriorRecord(prev => ({ ...prev, [key]: event.target.value }))}/>)}</div>
-          </> : <Select id="correction-year" label="Closed school year" required placeholder="Choose a year" value={schoolYear} options={sf10.history.filter(record => record.archiveId).map(record => ({ value: record.schoolYear, label: `${record.gradeLevel} · ${record.schoolYear}` }))} onChange={event => { setSchoolYear(event.target.value); setSubjectId(''); setGrades({}); }}/>}
-          <Select id="correction-subject" label="Learning area" required placeholder="Choose your subject" value={subjectId} options={subjects.map(subject => ({ value: subject.subjectId, label: subject.subjectName }))} onChange={event => chooseSubject(event.target.value)}/>
-          <div className="grid gap-3 sm:grid-cols-2">{subjectId && periods.map(period => <Input key={period.field} id={`correction-${period.field}`} label={period.label} type="number" required min="0" max="100" step="0.1" value={grades[period.field] ?? ''} onChange={event => setGrades(prev => ({ ...prev, [period.field]: event.target.value }))}/>)}</div>
-        </>}
+        <p className="text-sm text-slate-600">Only your currently assigned subjects can be corrected. Final ratings and remarks are recalculated automatically, and the reason is recorded.</p>
+        {mode === 'prior-record' ? <>
+          <p className="text-sm text-slate-600">Copy verified grades from the learner’s existing SF10, one assigned subject at a time. Do not enter estimated grades.</p>
+          <Input id="prior-year" label="Prior school year" required pattern="[0-9]{4}-[0-9]{4}" placeholder="2025-2026" value={schoolYear} onChange={event => setSchoolYear(event.target.value)}/>
+          <Select id="prior-grade" label="Prior grade level" options={[7, 8, 9].filter(grade => grade < Number(sf10.learner.gradeLevel.replace('Grade ', ''))).map(grade => ({ value: `Grade ${grade}`, label: `Grade ${grade}` }))} value={priorRecord.gradeLevel} onChange={event => setPriorRecord(prev => ({ ...prev, gradeLevel: event.target.value }))}/>
+          <div className="grid gap-4 sm:grid-cols-2">{[['section', 'Section'], ['adviser', 'Adviser'], ['school', 'School name'], ['schoolId', 'School ID'], ['district', 'District'], ['division', 'Division'], ['region', 'Region']].map(([key, label]) => <Input key={key} id={`prior-${key}`} label={label} required={['section', 'school'].includes(key)} value={priorRecord[key] || ''} onChange={event => setPriorRecord(prev => ({ ...prev, [key]: event.target.value }))}/>)}</div>
+        </> : <Select id="correction-year" label="Closed school year" required placeholder="Choose a year" value={schoolYear} options={sf10.history.filter(record => record.archiveId).map(record => ({ value: record.schoolYear, label: `${record.gradeLevel} · ${record.schoolYear}` }))} onChange={event => { setSchoolYear(event.target.value); setSubjectId(''); setGrades({}); }}/>}
+        <Select id="correction-subject" label="Learning area" required placeholder="Choose your subject" value={subjectId} options={subjects.map(subject => ({ value: subject.subjectId, label: subject.subjectName }))} onChange={event => chooseSubject(event.target.value)}/>
+        <div className="grid gap-3 sm:grid-cols-2">{subjectId && periods.map(period => <Input key={period.field} id={`correction-${period.field}`} label={period.label} type="number" required min="0" max="100" step="0.1" value={grades[period.field] ?? ''} onChange={event => setGrades(prev => ({ ...prev, [period.field]: event.target.value }))}/>)}</div>
         <Input id="record-change-reason" label="Verification / reason for change" required maxLength={1500} value={reason} onChange={event => setReason(event.target.value)}/>
         <Button type="submit" disabled={saving || (mode === 'correct-history' && !subjectId)}>{saving ? 'Saving…' : 'Save record'}</Button>
       </form>

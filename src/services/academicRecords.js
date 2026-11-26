@@ -45,7 +45,8 @@ function notifyGradeListeners() {
   listeners.forEach(fn => fn());
 }
 
-export function hydrateRecords() {
+export function hydrateRecords({ force = false } = {}) {
+  if (force) { generation += 1; hydration = undefined; }
   if (hydration) return hydration;
   const started = generation;
   const startedRevision = revision;
@@ -247,6 +248,7 @@ export function getSF10(studentId) {
       status: student.status,
     },
     eligibility: eligibility?.details || {},
+    versions: { learnerUpdatedAt: student.updatedAt, eligibilityUpdatedAt: eligibility?.updated_at ?? null },
     currentYear: {
       schoolYear: learnerYear,
       gradeLevel,

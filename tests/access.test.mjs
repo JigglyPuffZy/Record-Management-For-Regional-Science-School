@@ -254,3 +254,24 @@ test('notification badge counts every pending registration while feed returns th
   assert.equal(result.body.notifications[7].id, 'pending-4');
   for (const item of result.body.notifications) assert.deepEqual(Object.keys(item).sort(), ['created_at', 'id', 'name', 'role']);
 });
+
+test('inline learner edits require a teacher session and use a transactional save with trusted actor identity', async () => {
+  const body = { action: 'sf10-details', studentId: 'S-1', reason: 'Verified enrollment form', actorId: 'forged',
+    learner: { firstName: 'Test', lastName: 'Learner', lrn: '123456789012', birthdate: '2011-01-01', sex: 'Female' },
+    details: { eligible: true }, expected: { learnerUpdatedAt: '2026-11-26T00:00:00Z', eligibilityUpdatedAt: null },
+  };
+  for (const role of [null, 'student', 'admin']) {
+    const db = database({ app_accounts: role ? [account(role)] : [] });
+    assert.equal((await request(workflows, db, body, role)).statusCode, role ? 403 : 401);
+    assert.equal(db.calls.some(call => call.name === 'save_sf10_details'), false);
+  }
+  const db = database({ app_accounts: [account('teacher')] });
+  assert.equal((await request(workflows, db, body, 'teacher')).statusCode, 200);
+  const call = db.calls.find(item => item.name === 'save_sf10_details');
+  assert.equal(call.args.p_actor, 'teacher'); assert.equal(call.args.p_data.actorId, undefined);
+  for (const [code, expectedStatus, message] of [['40001', 409, /updated by another person/], ['PGRST202', 503, /SF10 details SQL update/]]) {
+    const failure = database({ app_accounts: [account('teacher')] }, { error: { code } });
+    const result = await request(workflows, failure, body, 'teacher');
+    assert.equal(result.statusCode, expectedStatus); assert.match(result.body.error, message);
+  }
+});

@@ -13,7 +13,7 @@ const data = { classes, subjects: [{ id: 'MATH', name: 'Mathematics' }, { id: 'S
   { id: 'teacher-preview', role: 'teacher', identifier: 't-preview', name: 'Sample Teacher', email: 'teacher@example.test', status: 'pending', details: { classId: 'G10-ARCHIMEDES', position: 'Teacher I', verification: 'Local preview example: Science department. Personnel office can verify employment.' }, created_at: '2026-11-20T02:00:00Z' },
   { id: 'student-preview', role: 'student', identifier: '123456789012', name: 'Sample Learner', email: 'learner@example.test', status: 'pending', details: { classId: 'G10-ARCHIMEDES', verification: 'Local preview example: Enrolled in 10 - Archimedes. Registrar can confirm enrollment.' }, created_at: '2026-11-20T03:00:00Z' },
 ] };
-const learners = [1, 2].map(n => ({ student_id: `S-PREVIEW-${n}`, lrn: `12345678901${n}`, first_name: `Learner ${n}`, last_name: 'Sample', middle_name: '', name_extension: '', display_name: `Sample Learner ${n}`, birthdate: '2011-02-03', sex: 'Female', class_id: 'G10-ARCHIMEDES', status: 'Active' }));
+const learners = [1, 2].map(n => ({ student_id: `S-PREVIEW-${n}`, lrn: `12345678901${n}`, first_name: `Learner ${n}`, last_name: 'Sample', middle_name: '', name_extension: '', display_name: `Sample Learner ${n}`, birthdate: '2011-02-03', sex: 'Female', class_id: 'G10-ARCHIMEDES', status: 'Active', updated_at: '2026-11-26T00:00:00Z' }));
 const grades = learners.map(student => ({ student_id: student.student_id, class_id: 'G10-ARCHIMEDES', subject_id: 'MATH', school_year_id: '2026-2027', grade_level: 'Grade 10', quarter1: null, quarter2: null, quarter3: null, quarter4: null, final_grade: null }));
 createServer(async (req, res) => {
   try {

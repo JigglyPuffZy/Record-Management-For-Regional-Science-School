@@ -8,7 +8,7 @@ export function createHandler(getDatabase = database) {
       const account = await requireAccount(req, db, ['teacher', 'student']);
       let assignmentsQuery = db.from('teaching_assignments').select('teacher_id, class_id, subject_id');
       if (account.role === 'teacher') assignmentsQuery = assignmentsQuery.eq('teacher_id', account.linked_id);
-      let studentQuery = db.from('students').select('student_id, lrn, last_name, first_name, middle_name, name_extension, display_name, sex, birthdate, class_id, status');
+      let studentQuery = db.from('students').select('student_id, lrn, last_name, first_name, middle_name, name_extension, display_name, sex, birthdate, class_id, status, updated_at');
       if (account.role === 'student') studentQuery = studentQuery.eq('student_id', account.linked_id);
       const assignments = await assignmentsQuery;
       check(assignments.error);

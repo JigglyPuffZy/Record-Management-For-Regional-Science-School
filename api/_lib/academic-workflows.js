@@ -2,6 +2,23 @@ import { HttpError } from './access.js';
 
 const text = (value, max = 200) => typeof value === 'string' ? value.trim().slice(0, max) : '';
 export function validateWorkflow(action, input = {}) {
+  if (action === 'sf10-details') {
+    const data = validateWorkflow('eligibility', input);
+    data.learner = {};
+    for (const field of ['firstName', 'lastName', 'middleName', 'nameExtension', 'lrn', 'birthdate', 'sex']) data.learner[field] = text(input.learner?.[field]);
+    if (!data.learner.firstName || !data.learner.lastName) throw new HttpError(400, 'First name and last name are required.');
+    if (!/^\d{12}$/.test(data.learner.lrn)) throw new HttpError(400, 'LRN must contain exactly 12 digits.');
+    if (!['Male', 'Female'].includes(data.learner.sex)) throw new HttpError(400, 'Choose Male or Female.');
+    const date = data.learner.birthdate;
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || !Number.isFinite(Date.parse(date)) || new Date(date).toISOString().slice(0, 10) !== date || date > new Date().toISOString().slice(0, 10)) throw new HttpError(400, 'Enter a valid birthdate.');
+    data.expected = {};
+    for (const key of ['learnerUpdatedAt', 'eligibilityUpdatedAt']) {
+      const value = input.expected?.[key];
+      if ((key === 'learnerUpdatedAt' && !value) || (value != null && (typeof value !== 'string' || !Number.isFinite(Date.parse(value))))) throw new HttpError(400, 'Refresh the record before editing its details.');
+      data.expected[key] = value ?? null;
+    }
+    return data;
+  }
   const reason = text(input.reason, 1500);
   if (!reason) throw new HttpError(400, 'Enter a reason for this record change.');
   const data = { reason };
