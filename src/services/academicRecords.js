@@ -250,6 +250,7 @@ export function getSF10(studentId) {
     eligibility: eligibility?.details || {},
     versions: { learnerUpdatedAt: student.updatedAt, eligibilityUpdatedAt: eligibility?.updated_at ?? null },
     currentYear: {
+      classId: student.classId,
       schoolYear: learnerYear,
       gradeLevel,
       section: cls?.section ?? 'Unknown',

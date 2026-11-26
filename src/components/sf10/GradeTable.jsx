@@ -3,6 +3,7 @@ import { formatGrade, getRemarks, isValidGrade } from '../../lib/utils.js';
 import { getDescriptorForGradeLevel } from '../../lib/grading.js';
 import { saveGrade } from '../../services/academicRecords.js';
 import { useToast } from '../../context/ToastContext.jsx';
+import { getSF10LearningAreas, isJHSQuarterlyGrade } from '../../lib/sf10Template.js';
 
 function GradeInputCell({ value, disabled, saving, onCommit, label }) {
   const [draft, setDraft] = useState(value ?? '');
@@ -39,7 +40,9 @@ function DescriptorCell({ gradeLevel, finalGrade }) {
 }
 
 export default function GradeTable({ gradeLevel, subjects, periods, finalLabel, generalAverage, scale, teacherId, studentId, schoolYear, editableSubjectIds, onSaved }) {
-  const showRemarks = true;
+  const quarterly = isJHSQuarterlyGrade(gradeLevel);
+  const rows = getSF10LearningAreas(gradeLevel, subjects);
+  const average = rows.length && rows.every(row => row.finalGrade != null) ? generalAverage : null;
   const toast = useToast();
   const [savingKey, setSavingKey] = useState('');
   const canEdit = (subjectId) => Boolean(teacherId) && (editableSubjectIds ?? []).includes(subjectId);
@@ -66,21 +69,29 @@ export default function GradeTable({ gradeLevel, subjects, periods, finalLabel, 
   }
 
   return (
-    <div className="overflow-x-auto rounded-lg border border-slate-300">
-      <table className="w-full min-w-max text-left text-sm">
-        <thead className="bg-slate-100 text-xs font-semibold uppercase tracking-wide text-slate-600">
-          <tr>
+    <div className={`overflow-x-auto border ${quarterly ? 'border-slate-700' : 'rounded-lg border-slate-300'}`}>
+      <table className={`w-full min-w-max text-left text-sm ${quarterly ? 'border-collapse font-sans [&_th]:border [&_th]:border-slate-700 [&_td]:border [&_td]:border-slate-700' : ''}`}>
+        <thead className={quarterly ? 'bg-white text-sm font-bold text-slate-900' : 'bg-slate-100 text-xs font-semibold uppercase tracking-wide text-slate-600'}>
+          {quarterly ? <>
+            <tr>
+              <th rowSpan={2} scope="col" className="px-4 py-3 text-center uppercase">Learning Areas</th>
+              <th colSpan={4} scope="colgroup" className="px-3 py-2 text-center">Quarterly Rating</th>
+              <th rowSpan={2} scope="col" className="px-3 py-3 text-center uppercase">Final<br/>Rating</th>
+              <th rowSpan={2} scope="col" className="px-4 py-3 text-center uppercase">Remarks</th>
+            </tr>
+            <tr>{periods.map((period, index) => <th key={period.id} scope="col" aria-label={`Quarter ${index + 1}`} className="px-3 py-1.5 text-center">{index + 1}</th>)}</tr>
+          </> : <tr>
             <th className="px-4 py-2.5">Learning Area</th>
             {periods.map((p) => (
               <th key={p.id} className="px-3 py-2.5 text-right">{p.label}</th>
             ))}
             <th className="px-3 py-2.5 text-right">{finalLabel}</th>
             <th className="px-4 py-2.5">Descriptor</th>
-            {showRemarks ? <th className="px-4 py-2.5">Remarks</th> : null}
-          </tr>
+            <th className="px-4 py-2.5">Remarks</th>
+          </tr>}
         </thead>
         <tbody className="divide-y divide-slate-200 bg-white">
-          {subjects.map((s) => (
+          {rows.map((s) => (
             <tr key={s.subjectId}>
               <td className="px-4 py-2 font-medium">{s.subjectName}</td>
               {periods.map((p) => (
@@ -102,12 +113,10 @@ export default function GradeTable({ gradeLevel, subjects, periods, finalLabel, 
                 </td>
               ))}
               <td className="px-3 py-2 text-right font-semibold tabular-nums">{formatGrade(s.finalGrade)}</td>
-              <td className="px-4 py-2 text-slate-600">
+              {!quarterly && <td className="px-4 py-2 text-slate-600">
                 <DescriptorCell gradeLevel={gradeLevel} finalGrade={s.finalGrade} />
-              </td>
-              {showRemarks ? (
-                <td className="px-4 py-2 text-slate-600">{getDescriptorForGradeLevel(gradeLevel, s.finalGrade).remarks || '—'}</td>
-              ) : null}
+              </td>}
+              <td className="px-4 py-2 text-slate-600">{getDescriptorForGradeLevel(gradeLevel, s.finalGrade).remarks || '—'}</td>
             </tr>
           ))}
         </tbody>
@@ -116,12 +125,12 @@ export default function GradeTable({ gradeLevel, subjects, periods, finalLabel, 
             <td className="px-4 py-2.5" colSpan={periods.length + 1}>
               General Average
             </td>
-            <td className="px-3 py-2.5 text-right tabular-nums">{formatGrade(generalAverage)}</td>
-            <td className="px-4 py-2.5" colSpan={showRemarks ? 2 : 1}>
+            <td className="px-3 py-2.5 text-right tabular-nums">{formatGrade(average)}</td>
+            <td className="px-4 py-2.5" colSpan={quarterly ? 1 : 2}>
               {scale === 'grade10' ? (
-                <DescriptorCell gradeLevel={gradeLevel} finalGrade={generalAverage} />
+                <DescriptorCell gradeLevel={gradeLevel} finalGrade={average} />
               ) : (
-                getRemarks(generalAverage)
+                getRemarks(average)
               )}
             </td>
           </tr>

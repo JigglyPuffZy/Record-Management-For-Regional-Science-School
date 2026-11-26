@@ -1,10 +1,14 @@
 import GradeTable from './GradeTable.jsx';
+import JHSRecordHeader from './JHSRecordHeader.jsx';
+import RecordEditor from './RecordEditor.jsx';
+import { getSF10HistorySections, isJHSQuarterlyGrade } from '../../lib/sf10Template.js';
 import { formatGrade, formatDate, getRemarks } from '../../lib/utils.js';
 import EmptyState from '../ui/EmptyState.jsx';
 import { History } from 'lucide-react';
 
-export default function AcademicHistory({ history }) {
-  if (!history || history.length === 0) {
+export default function AcademicHistory({ history = [], sf10, studentId, teacherId, classId, onSaved }) {
+  const sections = getSF10HistorySections(history, sf10?.learner.gradeLevel);
+  if (sections.length === 0) {
     return (
       <EmptyState
         icon={History}
@@ -16,20 +20,26 @@ export default function AcademicHistory({ history }) {
 
   return (
     <div className="space-y-6">
-      {history.map((year) => (
-        <div key={year.schoolYear} className="print-avoid-break">
+      {sections.map((year) => (
+        <div key={`${year.gradeLevel}:${year.schoolYear}`} className="print-avoid-break">
           <div className="mb-1 flex flex-wrap items-baseline justify-between gap-1">
             <h4 className="text-sm font-bold text-slate-900">
-              {year.gradeLevel} &middot; School Year {year.schoolYear}
+              {year.gradeLevel} &middot; {year.schoolYear ? `School Year ${year.schoolYear}` : 'Prior academic record'}
             </h4>
-            <p className="text-xs text-slate-500">Adviser: {year.adviser}</p>
+            {!isJHSQuarterlyGrade(year.gradeLevel) && <p className="text-xs text-slate-500">Adviser: {year.adviser}</p>}
           </div>
           <p className="mb-2 text-[11px] leading-snug text-slate-500">
-            {year.school} &middot; School ID {year.schoolId} &middot; Section {year.section} &middot; {year.district} &middot;{' '}
-            {year.division} &middot; {year.region}
+            School: {year.school || '—'} &middot; School ID {year.schoolId || '—'} &middot; {year.district || '—'} &middot;{' '}
+            {year.division || '—'} &middot; {year.region || '—'}
           </p>
+          {isJHSQuarterlyGrade(year.gradeLevel) && <JHSRecordHeader year={year}/>}
+          {year.isPlaceholder && <p className="no-print mb-2 text-xs text-slate-500">No verified grades recorded for this grade level yet. Blank cells are not zero grades.</p>}
           <GradeTable gradeLevel={year.gradeLevel} subjects={year.subjects} periods={year.gradingPeriods}
             finalLabel={year.finalLabel} generalAverage={year.generalAverage} scale={year.scale} />
+          {teacherId && studentId && sf10 && isJHSQuarterlyGrade(year.gradeLevel) && <div className="no-print mt-3">
+            <RecordEditor sf10={sf10} studentId={studentId} teacherId={teacherId} classId={classId} onSaved={onSaved}
+              initialGradeLevel={year.gradeLevel} initialYear={year} triggerLabel={`Enter ${year.gradeLevel} grades`} hideCorrections/>
+          </div>}
 
           {year.remedialClasses && year.remedialClasses.length > 0 ? (
             <div className="mt-3 print-avoid-break">

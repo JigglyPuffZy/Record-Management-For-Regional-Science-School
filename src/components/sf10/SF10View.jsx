@@ -3,6 +3,8 @@ import SF10Details from './SF10Details.jsx';
 import GradeTable from './GradeTable.jsx';
 import AcademicHistory from './AcademicHistory.jsx';
 import AppLogo from '../ui/AppLogo.jsx';
+import JHSRecordHeader from './JHSRecordHeader.jsx';
+import { isJHSQuarterlyGrade } from '../../lib/sf10Template.js';
 
 export default function SF10View({ sf10, studentId, teacherId, schoolYear, editableSubjectIds, onSaved }) {
   if (!sf10) return null;
@@ -46,6 +48,7 @@ export default function SF10View({ sf10, studentId, teacherId, schoolYear, edita
             {currentYear.school} &middot; School ID {currentYear.schoolId} &middot; Section {currentYear.section} &middot;{' '}
             {currentYear.district} &middot; {currentYear.division} &middot; {currentYear.region}
           </p>
+          {isJHSQuarterlyGrade(currentYear.gradeLevel) && <JHSRecordHeader year={currentYear}/>}
           <GradeTable
             gradeLevel={currentYear.gradeLevel}
             subjects={currentYear.subjects}
@@ -63,7 +66,7 @@ export default function SF10View({ sf10, studentId, teacherId, schoolYear, edita
 
         <section>
           <h4 className="mb-3 text-sm font-bold uppercase tracking-wide">Scholastic Record &mdash; Prior School Years</h4>
-          <AcademicHistory history={history} />
+          <AcademicHistory history={history} sf10={sf10} studentId={studentId} teacherId={teacherId} classId={currentYear.classId} onSaved={onSaved}/>
         </section>
 
         <footer className="mt-10 hidden grid-cols-2 gap-8 text-sm print:grid">
