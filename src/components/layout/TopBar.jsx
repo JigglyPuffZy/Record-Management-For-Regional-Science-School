@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Bell, LogOut, ChevronDown } from 'lucide-react';
 import AppLogo from '../ui/AppLogo.jsx';
+import AdminNotifications from './AdminNotifications.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { getActiveSchoolYear } from '../../services/academicRecords.js';
 import { getNavForRole } from './navConfig.js';
@@ -56,14 +57,14 @@ export default function TopBar() {
           </Link>
 
           <div className="flex items-center gap-1">
-            <button
+            {user?.role === 'admin' ? <AdminNotifications key={user.accountId || user.id}/> : <button
               type="button"
               className="relative flex h-11 w-11 items-center justify-center rounded-xl text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800"
               aria-label="Notifications"
             >
               <Bell className="h-[18px] w-[18px]" />
               <span className="absolute right-2.5 top-2.5 h-1.5 w-1.5 rounded-full bg-brand-600" />
-            </button>
+            </button>}
 
             <div className="relative" ref={menuRef}>
               <button

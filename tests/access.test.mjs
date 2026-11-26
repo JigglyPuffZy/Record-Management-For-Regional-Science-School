@@ -17,12 +17,13 @@ function database(tables = {}, rpcResult = { error: null }) {
     rpc: async (name, args) => { calls.push({ name, args }); return rpcResult; },
     from(table) {
       const filters = [];
-      let payload, operation = 'select', projection = '*', single = false;
+      let payload, operation = 'select', projection = '*', single = false, maxRows, sort, includeCount = false;
       const query = {
-        select(columns = '*') { projection = columns; return this; },
+        select(columns = '*', options = {}) { projection = columns; includeCount = !!options.count; return this; },
         eq(key, value) { filters.push(row => key.includes('.') ? true : row[key] === value); return this; },
         in(key, values) { filters.push(row => values.includes(row[key])); return this; },
-        order() { return this; },
+        order(key, options = {}) { sort = { key, ascending: options.ascending !== false }; return this; },
+        limit(value) { maxRows = value; return this; },
         insert(value) { payload = value; operation = 'insert'; return this; },
         update(value) { payload = value; operation = 'update'; return this; },
         upsert(value) { payload = value; operation = 'upsert'; return this; },
@@ -41,8 +42,11 @@ function database(tables = {}, rpcResult = { error: null }) {
             if (operation === 'update') rows.forEach(row => Object.assign(row, payload));
             if (operation === 'delete') tables[table] = tables[table].filter(row => !rows.includes(row));
             if (operation === 'upsert') { tables[table].push(payload); rows = [payload]; }
+            const count = includeCount ? rows.length : null;
+            if (sort) rows.sort((a, b) => String(a[sort.key]).localeCompare(String(b[sort.key])) * (sort.ascending ? 1 : -1));
+            if (maxRows != null) rows = rows.slice(0, maxRows);
             const projected = projection === '*' ? rows : rows.map(row => Object.fromEntries(Object.entries(row).filter(([key]) => projection.split(',').map(x => x.trim()).includes(key))));
-            return Promise.resolve({ data: single ? projected[0] || null : projected, error: null }).then(resolve, reject);
+            return Promise.resolve({ data: single ? projected[0] || null : projected, count, error: null }).then(resolve, reject);
           } catch (err) { return Promise.reject(err).then(resolve, reject); }
         },
       };
@@ -222,4 +226,31 @@ test('only administrators can delete teacher/student login accounts while preser
   assert.equal(db.tables.app_accounts.some(row => row.id === 'student'), false);
   assert.equal(db.tables.students.length, 1); assert.equal(db.tables.grade_records[0].quarter1, 90);
   assert.equal((await request(records, db, {}, 'student')).statusCode, 403);
+});
+
+test('notification feed is admin-only and excludes approved, rejected, and admin registrations', async () => {
+  const db = database({ app_accounts: [account('admin'), account('teacher'), account('student'),
+    { ...account('teacher', 'pending'), id: 'pending-teacher' },
+    { ...account('student', 'rejected'), id: 'rejected-student' },
+    { ...account('admin', 'pending'), id: 'pending-admin' },
+  ] });
+  for (const role of [null, 'teacher', 'student']) {
+    assert.equal((await request(admin, db, { action: 'notifications' }, role)).statusCode, role ? 403 : 401);
+  }
+  const result = await request(admin, db, { action: 'notifications' }, 'admin');
+  assert.equal(result.statusCode, 200); assert.equal(result.body.total, 1);
+  assert.deepEqual(Object.keys(result.body.notifications[0]).sort(), ['id', 'name', 'role']);
+  assert.equal(result.body.notifications[0].id, 'pending-teacher');
+  db.tables.app_accounts.find(row => row.id === 'pending-teacher').status = 'approved';
+  assert.deepEqual((await request(admin, db, { action: 'notifications' }, 'admin')).body, { notifications: [], total: 0 });
+});
+
+test('notification badge counts every pending registration while feed returns the newest eight without private fields', async () => {
+  const pending = Array.from({ length: 12 }, (_, index) => ({ ...account(index % 2 ? 'teacher' : 'student', 'pending'), id: `pending-${index}`, created_at: `2026-11-${String(index + 1).padStart(2, '0')}T00:00:00Z` }));
+  const db = database({ app_accounts: [account('admin'), ...pending] });
+  const result = await request(admin, db, { action: 'notifications' }, 'admin');
+  assert.equal(result.body.total, 12); assert.equal(result.body.notifications.length, 8);
+  assert.equal(result.body.notifications[0].id, 'pending-11');
+  assert.equal(result.body.notifications[7].id, 'pending-4');
+  for (const item of result.body.notifications) assert.deepEqual(Object.keys(item).sort(), ['created_at', 'id', 'name', 'role']);
 });

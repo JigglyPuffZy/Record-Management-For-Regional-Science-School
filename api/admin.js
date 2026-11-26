@@ -7,6 +7,14 @@ export function createHandler(getDatabase = database) {
       const db = getDatabase();
       const admin = await requireAccount(req, db, ['admin']);
       const body = req.body || {};
+      if (body.action === 'notifications') {
+        const { data, count, error } = await db.from('app_accounts')
+          .select('id, role, name, created_at', { count: 'exact' })
+          .eq('status', 'pending').in('role', ['teacher', 'student'])
+          .order('created_at', { ascending: false }).limit(8);
+        check(error);
+        return res.status(200).json({ notifications: data, total: count ?? data.length });
+      }
       if (body.action === 'list') {
         const results = await Promise.all([
           db.from('app_accounts').select('id, role, identifier, name, email, status, details, linked_id, created_at, reviewed_at, review_note, reviewed_by').order('created_at', { ascending: false }),

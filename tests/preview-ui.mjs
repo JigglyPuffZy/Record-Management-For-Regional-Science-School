@@ -35,6 +35,10 @@ createServer(async (req, res) => {
         return res.end(JSON.stringify({ studentId: grade.student_id, classId: grade.class_id, subjectId: grade.subject_id, schoolYear: grade.school_year_id, gradeLevel: grade.grade_level, quarter1: grade.quarter1, quarter2: grade.quarter2, quarter3: grade.quarter3, quarter4: null, finalGrade: grade.final_grade }));
       }
       if (req.url === '/api/admin') {
+        if (body.action === 'notifications') {
+          const pending = data.accounts.filter(account => account.status === 'pending' && account.role !== 'admin');
+          return res.end(JSON.stringify({ total: pending.length, notifications: pending.slice().sort((a, b) => b.created_at.localeCompare(a.created_at)).slice(0, 8).map(({ id, role, name, created_at }) => ({ id, role, name, created_at })) }));
+        }
         if (body.action === 'review') { res.statusCode = 400; return res.end(JSON.stringify({ error: 'Visual preview only. No registrations are changed.' })); }
         return res.end(JSON.stringify(data));
       }

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { ShieldCheck, Clock3, Users, GraduationCap, RefreshCw, Check, X, Trash2 } from 'lucide-react';
 import PageContainer from '../../components/layout/PageContainer.jsx';
 import { Card, CardBody, StatCard } from '../../components/ui/Card.jsx';
@@ -18,6 +18,8 @@ const tone = status => status === 'approved' ? 'emerald' : status === 'rejected'
 
 export default function AdminPortal({ view }) {
   const toast = useToast();
+  const location = useLocation();
+  const notificationId = new URLSearchParams(location.search).get('registration');
   const [data, setData] = useState({ accounts: [], classes: [], subjects: [], assignments: [] });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -38,7 +40,13 @@ export default function AdminPortal({ view }) {
     catch (err) { setError(err.message); }
     finally { setLoading(false); }
   }, []);
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => { load(); }, [load, location.key]);
+  useEffect(() => {
+    if (view === 'registrations' && notificationId) { setRole('all'); setStatus('pending'); setQuery(''); }
+  }, [view, notificationId]);
+  useEffect(() => {
+    if (view === 'registrations' && notificationId && !loading) document.getElementById(`registration-${notificationId}`)?.scrollIntoView({ block: 'center' });
+  }, [view, notificationId, loading, role, status, query]);
   function review(account, value) {
     setSelected(account); setDecision(value); setClassId(account.details.classId || ''); setSubjectIds([]); setNote('');
   }
@@ -46,6 +54,7 @@ export default function AdminPortal({ view }) {
     event.preventDefault(); setSaving(true);
     try {
       await apiPost('/api/admin', { action: 'review', accountId: selected.id, decision, classId, subjectIds, note });
+      window.dispatchEvent(new Event('admin-accounts-updated'));
       setSelected(null); toast.success(decision === 'approved' ? 'Account approved. They can now sign in.' : 'Registration declined.'); await load();
     } catch (err) { toast.error(err.message); }
     finally { setSaving(false); }
@@ -54,6 +63,7 @@ export default function AdminPortal({ view }) {
     setDeleteBusy(true);
     try {
       await apiPost('/api/admin', { action: 'delete', accountId: deleting.id });
+      window.dispatchEvent(new Event('admin-accounts-updated'));
       setDeleting(null); toast.success('Account deleted.'); await load();
     } catch (err) { toast.error(err.message); }
     finally { setDeleteBusy(false); }
@@ -65,7 +75,7 @@ export default function AdminPortal({ view }) {
   function accountCard(account) {
     const cls = data.classes.find(c => c.id === (account.details.approvedClassId || account.details.classId));
     const assignments = data.assignments.filter(a => a.teacher_id === account.linked_id);
-    return <Card key={account.id}><CardBody>
+    return <Card key={account.id} id={`registration-${account.id}`} className={notificationId === account.id ? 'scroll-mt-28 ring-2 ring-brand-500' : ''}><CardBody>
       <div className="flex flex-wrap items-start justify-between gap-3"><div className="min-w-0"><h2 className="text-lg font-bold text-slate-900">{account.name}</h2><p className="break-all text-sm text-slate-500">{account.email}</p></div><div className="flex gap-2"><Badge tone="slate">{account.role}</Badge><Badge tone={tone(account.status)}>{account.status}</Badge></div></div>
       <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-3"><div><dt className="text-xs text-slate-500">{account.role === 'teacher' ? 'Teacher ID' : 'LRN'}</dt><dd className="font-semibold">{account.identifier.toUpperCase()}</dd></div><div><dt className="text-xs text-slate-500">{account.status === 'approved' ? 'Confirmed section' : 'Requested section'}</dt><dd>{cls ? formatClassLabel(cls.grade_level, cls.section) : 'Existing account'}</dd></div><div><dt className="text-xs text-slate-500">Submitted</dt><dd>{date(account.created_at)}</dd></div></dl>
       {account.details.position && <p className="mt-3 text-sm text-slate-600">Position: {account.details.position}</p>}
