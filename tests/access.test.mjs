@@ -6,6 +6,7 @@ import { createHandler as admin } from '../api/admin.js';
 import { createHandler as records } from '../api/records.js';
 import { createHandler as grades } from '../api/save-grade.js';
 import { createHandler as workflows } from '../api/academic-workflows.js';
+import { createHandler as notifications } from '../api/notifications.js';
 
 process.env.APP_SESSION_SECRET = 'local-test-secret-never-used-in-production';
 const password = 'SchoolTest!2468';
@@ -20,7 +21,7 @@ function database(tables = {}, rpcResult = { error: null }) {
       let payload, operation = 'select', projection = '*', single = false, maxRows, sort, includeCount = false;
       const query = {
         select(columns = '*', options = {}) { projection = columns; includeCount = !!options.count; return this; },
-        eq(key, value) { filters.push(row => key.includes('.') ? true : row[key] === value); return this; },
+        eq(key, value) { filters.push(row => key.includes('->>') ? row[key.split('->>')[0]]?.[key.split('->>')[1]] === value : key.includes('.') ? true : row[key] === value); return this; },
         in(key, values) { filters.push(row => values.includes(row[key])); return this; },
         order(key, options = {}) { sort = { key, ascending: options.ascending !== false }; return this; },
         limit(value) { maxRows = value; return this; },
@@ -274,4 +275,67 @@ test('inline learner edits require a teacher session and use a transactional sav
     const result = await request(workflows, failure, body, 'teacher');
     assert.equal(result.statusCode, expectedStatus); assert.match(result.body.error, message);
   }
+});
+
+test('portal notifications require an approved linked teacher or student account', async () => {
+  for (const role of [null, 'admin']) {
+    const db = database({ app_accounts: role ? [account(role)] : [] });
+    assert.equal((await request(notifications, db, {}, role)).statusCode, role ? 403 : 401);
+  }
+  for (const patch of [{ status: 'pending' }, { linked_id: null }]) {
+    const db = database({ app_accounts: [{ ...account('student'), ...patch }] });
+    assert.equal((await request(notifications, db, {}, 'student')).statusCode, 403);
+  }
+});
+
+test('student alerts expose only their own updated records, include zero and cleared grades, and ignore blank new rows', async () => {
+  const stamp = '2026-11-26T01:00:00Z';
+  const db = database({ app_accounts: [account('student')], subjects: [{ id: 'MATH', name: 'Mathematics' }],
+    grade_records: [
+      { id: 'own-zero', student_id: 'S-1', subject_id: 'MATH', school_year_id: '2026-2027', quarter1: 0, updated_at: stamp },
+      { id: 'own-cleared', student_id: 'S-1', subject_id: 'ENG', school_year_id: '2025-2026', quarter1: null, updated_by: 'T-1', updated_at: stamp },
+      { id: 'blank-new', student_id: 'S-1', subject_id: 'SCI', quarter1: null, updated_at: stamp },
+      { id: 'other', student_id: 'S-2', subject_id: 'PRIVATE', quarter1: 99, updated_at: stamp },
+    ],
+    student_eligibility: [{ student_id: 'S-1', updated_at: stamp }, { student_id: 'S-2', updated_at: '2099-01-01T00:00:00Z' }],
+    academic_record_audit: [{ student_id: 'S-2', action: 'sf10-details', created_at: '2099-01-01T00:00:00Z' }],
+  });
+  const result = await request(notifications, db, { studentId: 'S-2', role: 'admin' }, 'student');
+  assert.equal(result.statusCode, 200); assert.equal(result.body.total, 3);
+  assert.deepEqual(result.body.notifications.map(item => item.id).sort(), ['grade:own-cleared', 'grade:own-zero', 'sf10-details']);
+  assert.ok(result.body.notifications.find(item => item.id === 'grade:own-zero').href.includes('schoolYear=2026-2027&subjectId=MATH'));
+  assert.equal(result.body.notifications.find(item => item.id === 'sf10-details').version, stamp);
+  for (const item of result.body.notifications) assert.deepEqual(Object.keys(item).sort(), ['createdAt', 'description', 'href', 'id', 'title', 'version']);
+  assert.ok(!JSON.stringify(result.body).includes('PRIVATE'));
+});
+
+test('teacher alerts scope grade reminders to assigned subjects and active years, plus registrations submitted by that teacher', async () => {
+  const own = account('teacher');
+  const db = database({ app_accounts: [own,
+    ...['pending', 'approved', 'rejected'].map(status => ({ id: status, role: 'student', name: `Own ${status}`, status, details: { submittedBy: own.id } })),
+    { id: 'foreign-registration', role: 'student', name: 'Private Other Learner', status: 'pending', details: { submittedBy: 'other-teacher' } },
+  ], school_years: [{ id: '2026-2027', is_active: true }, { id: '2025-2026', is_active: false }],
+    teaching_assignments: [
+      { teacher_id: 'T-1', class_id: 'A', subject_id: 'MATH', school_year_id: '2026-2027' },
+      { teacher_id: 'T-1', class_id: 'B', subject_id: 'SCI', school_year_id: '2026-2027' },
+      { teacher_id: 'T-1', class_id: 'D', subject_id: 'AP', school_year_id: '2026-2027' },
+      { teacher_id: 'T-1', class_id: 'OLD', subject_id: 'OLD-SUBJECT', school_year_id: '2025-2026' },
+      { teacher_id: 'T-2', class_id: 'A', subject_id: 'OTHER-SUBJECT', school_year_id: '2026-2027' },
+    ], classes: [{ id: 'A', grade_level: 'Grade 10', section: 'Archimedes' }, { id: 'B', grade_level: 'Grade 10', section: 'B' }, { id: 'D', grade_level: 'Grade 9', section: 'D' }],
+    subjects: [{ id: 'MATH', name: 'Mathematics' }, { id: 'SCI', name: 'Science' }, { id: 'AP', name: 'Araling Panlipunan' }],
+    students: [{ student_id: 'S1', class_id: 'A', status: 'Active' }, { student_id: 'S2', class_id: 'A', status: 'Active' }, { student_id: 'inactive', class_id: 'A', status: 'Inactive' }, { student_id: 'S4', class_id: 'B', status: 'Active' }, { student_id: 'S5', class_id: 'D', status: 'Active' }],
+    grade_records: [
+      { student_id: 'S1', class_id: 'A', subject_id: 'MATH', school_year_id: '2026-2027', quarter1: 0, quarter2: 80, quarter3: 90 },
+      { student_id: 'S2', class_id: 'A', subject_id: 'MATH', school_year_id: '2026-2027', quarter1: 80, quarter2: 80, quarter3: null },
+      { student_id: 'S4', class_id: 'B', subject_id: 'SCI', school_year_id: '2026-2027', quarter1: 80, quarter2: 80, quarter3: 80 },
+      { student_id: 'S5', class_id: 'D', subject_id: 'AP', school_year_id: '2026-2027', quarter1: 80, quarter2: 80, quarter3: 80, quarter4: null },
+    ],
+  });
+  const result = await request(notifications, db, { teacherId: 'T-2' }, 'teacher');
+  assert.equal(result.statusCode, 200); assert.equal(result.body.total, 5);
+  assert.deepEqual(result.body.notifications.filter(item => item.id.startsWith('grading:')).map(item => item.id).sort(), ['grading:A:MATH', 'grading:D:AP']);
+  assert.match(result.body.notifications.find(item => item.id === 'grading:A:MATH').description, /^1 learner with/);
+  assert.equal(result.body.notifications.find(item => item.id === 'grading:A:MATH').href, '/teacher/class-record?classId=A&subjectId=MATH');
+  assert.ok(!JSON.stringify(result.body).includes('Private Other Learner'));
+  assert.ok(!JSON.stringify(result.body).includes('OLD-SUBJECT'));
 });

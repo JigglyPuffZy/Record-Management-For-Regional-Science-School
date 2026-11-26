@@ -5,6 +5,7 @@ import access from '../api/access.js';
 import admin from '../api/admin.js';
 import records from '../api/records.js';
 import academicWorkflows from '../api/academic-workflows.js';
+import notifications from '../api/notifications.js';
 
 function loadEnv() {
   try {
@@ -56,6 +57,7 @@ function mockRes(res) {
 }
 
 const routes = {
+  '/api/notifications': notifications,
   '/api/academic-workflows': academicWorkflows,
   '/api/access': access,
   '/api/admin': admin,

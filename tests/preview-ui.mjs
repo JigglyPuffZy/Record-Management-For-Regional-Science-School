@@ -7,7 +7,8 @@ const root = resolve('dist');
 const port = Number(process.argv.find(value => value.startsWith('--port='))?.split('=')[1] || 4174);
 const admin = { id: 'admin-preview', accountId: 'admin-preview', role: 'admin', name: 'School Administrator', email: 'admin@example.test' };
 const teacher = { id: 'T-PREVIEW', accountId: 'teacher-preview', role: 'teacher', name: 'Sample Teacher', email: 'teacher@example.test' };
-const actor = process.argv.includes('--teacher') ? teacher : admin;
+const student = { id: 'S-PREVIEW-1', accountId: 'student-preview', role: 'student', name: 'Sample Learner 1', email: 'student@example.test' };
+const actor = process.argv.includes('--student') ? student : process.argv.includes('--teacher') ? teacher : admin;
 const classes = [{ id: 'G10-ARCHIMEDES', grade_level: 'Grade 10', section: 'Archimedes', school_year_id: '2026-2027' }];
 const data = { classes, subjects: [{ id: 'MATH', name: 'Mathematics' }, { id: 'SCI', name: 'Science' }, { id: 'ENG', name: 'English' }, { id: 'RESEARCH', name: 'Research' }], assignments: [], accounts: [
   { id: 'teacher-preview', role: 'teacher', identifier: 't-preview', name: 'Sample Teacher', email: 'teacher@example.test', status: 'pending', details: { classId: 'G10-ARCHIMEDES', position: 'Teacher I', verification: 'Local preview example: Science department. Personnel office can verify employment.' }, created_at: '2026-11-20T02:00:00Z' },
@@ -22,6 +23,12 @@ createServer(async (req, res) => {
       const body = JSON.parse(raw || '{}');
       res.setHeader('Content-Type', 'application/json');
       if (req.url === '/api/access') return res.end(JSON.stringify(['options', 'teacher-options'].includes(body.action) ? { classes } : { user: actor }));
+      if (req.url === '/api/notifications') {
+        const item = actor.role === 'teacher'
+          ? { id: 'grading:G10-ARCHIMEDES:MATH', version: 'preview-1', createdAt: '2026-11-26T00:00:00Z', title: 'Mathematics · Grade 10 - Archimedes', description: '2 learners with incomplete term grades. Open your class record to continue.', href: '/teacher/class-record?classId=G10-ARCHIMEDES&subjectId=MATH' }
+          : { id: 'sf10-details', version: 'preview-1', createdAt: '2026-11-26T00:00:00Z', title: 'Your SF10 was updated', description: 'View your latest learner information and permanent academic record.', href: '/student/sf10' };
+        return res.end(JSON.stringify({ total: 1, notifications: [item] }));
+      }
       if (req.url === '/api/academic-workflows') {
         if (body.action === 'options') return res.end(JSON.stringify({ years: [{ id: '2026-2027', label: '2026-2027', is_active: true }], classes, subjects: data.subjects, teachers: [{ linked_id: teacher.id, name: teacher.name }], students: learners, assignments: [] }));
         res.statusCode = 400; return res.end(JSON.stringify({ error: 'Synthetic preview only. No academic workflows are submitted.' }));

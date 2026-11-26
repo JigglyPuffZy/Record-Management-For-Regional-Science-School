@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import PageContainer from '../../components/layout/PageContainer.jsx';
 import { Card, CardBody } from '../../components/ui/Card.jsx';
 import Select from '../../components/ui/Select.jsx';
@@ -13,6 +14,9 @@ import { getDescriptorForGradeLevel } from '../../lib/grading.js';
 import { FolderSearch, BookOpen } from 'lucide-react';
 
 export default function StudentAcademicRecords() {
+  const [searchParams] = useSearchParams();
+  const requestedYear = searchParams.get('schoolYear') || '';
+  const requestedSubject = searchParams.get('subjectId') || 'all';
   const { user } = useAuth();
   const [sf10, setSf10] = useState(() => getSF10(user.id));
   useEffect(() => subscribeToGrades(() => setSf10(getSF10(user.id))), [user.id]);
@@ -24,12 +28,15 @@ export default function StudentAcademicRecords() {
     return [current, ...past];
   }, [sf10]);
 
-  const [schoolYear, setSchoolYear] = useState('');
-  const [subjectFilter, setSubjectFilter] = useState('all');
+  const [schoolYear, setSchoolYear] = useState(requestedYear);
+  const [subjectFilter, setSubjectFilter] = useState(requestedSubject);
   const [period, setPeriod] = useState('all');
+  useEffect(() => {
+    setSchoolYear(requestedYear); setSubjectFilter(requestedSubject); setPeriod('all');
+  }, [requestedYear, requestedSubject]);
 
   useEffect(() => {
-    if (yearOptions.length > 0 && !schoolYear) setSchoolYear(yearOptions[0].value);
+    if (yearOptions.length > 0 && !yearOptions.some(year => year.value === schoolYear)) setSchoolYear(yearOptions[0].value);
   }, [yearOptions, schoolYear]);
 
   if (!sf10) return null;

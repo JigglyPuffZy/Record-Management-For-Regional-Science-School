@@ -61,7 +61,8 @@ export default function TeacherClassRecord() {
     return [...seen.entries()].map(([value, label]) => ({ value, label }));
   }, [assignments]);
 
-  const [classId, setClassId] = useState(() => searchParams.get('classId') || classOptions[0]?.value || '');
+  const requestedClass = searchParams.get('classId');
+  const classId = classOptions.some(option => option.value === requestedClass) ? requestedClass : classOptions[0]?.value || '';
   const cls = getClassById(classId);
   const periods = getGradingPeriodsForClass(classId);
 
@@ -70,7 +71,12 @@ export default function TeacherClassRecord() {
     [assignments, classId],
   );
 
-  const [subjectId, setSubjectId] = useState(() => searchParams.get('subjectId') || subjectOptions[0]?.value || '');
+  const requestedSubject = searchParams.get('subjectId');
+  const subjectId = subjectOptions.some(option => option.value === requestedSubject) ? requestedSubject : subjectOptions[0]?.value || '';
+  function setClassId(value) {
+    setSearchParams({ classId: value, subjectId: assignments.find(assignment => assignment.classId === value)?.subjectId || '' }, { replace: true });
+  }
+  function setSubjectId(value) { setSearchParams({ classId, subjectId: value }, { replace: true }); }
   const [gradingPeriod, setGradingPeriod] = useState(() => periods[0]?.id ?? 'term1');
   const [query, setQuery] = useState('');
 
@@ -117,23 +123,6 @@ export default function TeacherClassRecord() {
       : null),
     [classId, subjectId, schoolYear, gradingPeriod],
   );
-
-  useEffect(() => {
-    if (!classOptions.some((c) => c.value === classId)) {
-      setClassId(classOptions[0]?.value ?? '');
-    }
-  }, [classOptions, classId]);
-
-  useEffect(() => {
-    if (!subjectOptions.some((s) => s.value === subjectId)) {
-      setSubjectId(subjectOptions[0]?.value ?? '');
-    }
-  }, [subjectOptions, subjectId]);
-
-  useEffect(() => {
-    if (classId && subjectId) setSearchParams({ classId, subjectId }, { replace: true });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [classId, subjectId]);
 
   useEffect(() => {
     if (!storageKey || !rows.length) {
